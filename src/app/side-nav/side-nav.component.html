@@ -1,0 +1,21 @@
+<mat-toolbar></mat-toolbar>
+
+<mat-nav-list>
+    <mat-accordion >
+        <ng-template ngFor let-menu [ngForOf]="menus">
+            <mat-expansion-panel *ngIf="hasSubMenu(menu); else standAloneMenu">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        {{menu.name}}
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                
+                <a mat-list-item routerLink="{{subMenu.url}}" routerLinkActive="active" *ngFor="let subMenu of menu.subMenu;" (click)="isHandset && drawer.toggle()">{{subMenu.name}}</a>
+            </mat-expansion-panel>
+            
+            <ng-template #standAloneMenu>
+                <a mat-list-item routerLink="{{menu.url}}" routerLinkActive="active" class="stand-alone-menu">{{menu.name}}</a>
+            </ng-template>            
+        </ng-template>
+    </mat-accordion>
+</mat-nav-list>
