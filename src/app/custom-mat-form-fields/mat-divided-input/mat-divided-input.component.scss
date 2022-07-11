@@ -1,0 +1,22 @@
+div {
+    display: flex;
+}
+  
+input {
+    border: none;
+    background: none;
+    padding: 0;
+    outline: none;
+    font: inherit;
+    text-align: center;
+    color: currentColor;
+}
+
+span {
+    opacity: 0;
+    transition: opacity 200ms;
+}
+
+:host.example-floating span {
+    opacity: 1;
+}

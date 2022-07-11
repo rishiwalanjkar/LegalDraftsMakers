@@ -1,0 +1,12 @@
+<div role="group" [formGroup]="parts">
+    <ng-container *ngFor="let input of inputs; let i = index; let last=last;" 
+    >
+        <input 
+            formControlName="input-{{i}}" 
+            [maxlength]="input.maxLength"
+            [size]="input.maxLength"
+            (input)="handleInput(i)"
+            (keyup.backspace)="autoFocusPrev(i)" #inputs/>
+        <span *ngIf="!last" [innerText]="separator"></span>
+    </ng-container>
+</div>

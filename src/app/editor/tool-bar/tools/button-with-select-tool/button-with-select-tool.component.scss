@@ -1,0 +1,45 @@
+:host{
+    display: inline-block;
+    padding: 3px;
+    padding-right: 23px;
+
+    button, mat-button-toggle{
+        line-height: 48px;
+        padding : 0 13px !important;
+        min-width: auto;
+        border-top-right-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
+        top:-9px;
+    }
+
+    mat-button-toggle{
+        ::ng-deep{
+            span.mat-button-toggle-label-content{
+                padding: 0px;    
+            }
+        }
+    }
+
+    mat-form-field{
+        max-width:10px;
+        left:-5px;
+        top:-4px;
+        display: inline-block;
+        
+        ::ng-deep{
+            .mat-form-field-outline-start{
+                border:none !important;
+            }
+    
+            .mat-form-field-outline-end{
+                border-color: rgba(255,255,255,.12);
+                height: 48px;
+                min-width: 28px;
+            }
+        } 
+    }
+}
+
+
+
+

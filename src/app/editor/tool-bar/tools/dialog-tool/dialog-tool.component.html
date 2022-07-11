@@ -1,0 +1,16 @@
+<button mat-stroked-button (click)="openDialog()" [matTooltip]="dialog.toolTip">
+    <mat-icon *ngIf="dialog.hasIcon()" [color]="color">{{dialog.icon}}</mat-icon>
+    <span style="font-size: 20px;" *ngIf="dialog.hasLabel()" [innerHTML]="dialog.label"></span>
+</button>
+
+<ng-template #dialogTmp let-data>
+    <h1 mat-dialog-title>{{data.caption}}</h1>
+    <br/>
+    <div mat-dialog-content>
+        <ng-container [ngTemplateOutlet]="data.content" [ngTemplateOutletContext]="{events:data.events,data:data.data}"></ng-container>
+    </div>
+    <div mat-dialog-actions>
+        <button mat-raised-button [color]="color" (click)="dialogSuccess()">{{dialog.successButtonCaption}}</button>
+        <button mat-raised-button mat-dialog-close="closed">Cancel</button>
+    </div>
+</ng-template>

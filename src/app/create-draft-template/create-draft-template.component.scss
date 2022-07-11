@@ -1,0 +1,39 @@
+:host{
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+
+    app-editor, div.template-creator{
+        border: 3px solid currentColor;
+    }
+
+    div.template-creator{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap : 10px;
+
+        mat-card{
+            word-wrap: break-word;
+            min-height: 70px;
+            width: calc(100% - 30px);
+            padding: 15px;
+            text-align: center;
+        }
+
+        div.draft{
+            border: 1px dashed currentColor;
+        }
+    }
+}
+
+div.tab-contents{
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    mat-radio-group{
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+}

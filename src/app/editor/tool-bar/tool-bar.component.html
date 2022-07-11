@@ -1,0 +1,366 @@
+<mat-card>
+    <mat-card-content>
+        <mat-tab-group [color]="color" [(selectedIndex)]="selectedTabIndex">
+            <mat-tab [label]="toolGroup.FILE" *ngIf="config?.isToolGroupConfigured(toolGroup.FILE)">
+                <div class="tool-wrapper">
+                    <app-button-tool [color]="color" [button]="print"></app-button-tool>
+                    <app-button-tool [color]="color" [button]="save"></app-button-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.FILE, fileToolGroup.FIND)" [color]="color" [dialog]="find"></app-dialog-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.FILE, fileToolGroup.FIND_AND_REPLACE)" [color]="color" [dialog]="replace"></app-dialog-tool>
+                </div>
+            </mat-tab>
+            <mat-tab [label]="toolGroup.HOME" *ngIf="config?.isToolGroupConfigured(toolGroup.HOME)">
+                <div class="tool-wrapper">
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.UNDO)" [color]="color" [button]="undo"></app-button-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.REDO)" [color]="color" [button]="redo"></app-button-tool>
+                    <app-select-tool [color]="color" [selectTool]="font"></app-select-tool>
+                    <app-select-tool [color]="color" [selectTool]="fontSize"></app-select-tool>
+                    <app-button-tool [color]="color" [button]="bold"></app-button-tool>
+                    <app-button-tool [color]="color" [button]="italic"></app-button-tool>
+                    <app-button-with-select-tool [color]="color" [button]="underline"></app-button-with-select-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SUPERSCRIPT)" [color]="color" [button]="superscript"></app-button-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SUBSCRIPT)" [color]="color" [button]="subscript"></app-button-tool>
+                    <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.CHANGE_CASE)" [color]="color" [button]="changeCase"></app-button-with-select-tool>
+                    <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.FORECOLOR)" [color]="color" [button]="textColor"></app-button-with-select-tool>
+                    <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.HIGHLIGHT)" [color]="color" [button]="highlight"></app-button-with-select-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.JUSTIFY)" [color]="color" [button]="alignmentGroup"></app-button-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.INDENT)" [color]="color" [button]="indentIncrease"></app-button-tool>    
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.OUTDENT)" [color]="color" [button]="indentDecrease"></app-button-tool>    
+                    <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.BULLETED_LIST)" [color]="color" [button]="bulletedList"></app-button-with-select-tool>
+                    <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.NUMBERED_LIST)" [color]="color" [button]="numberedList"></app-button-with-select-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SYMBOL)" [color]="color" [dialog]="symbol"></app-dialog-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.IMAGE)" [color]="color" [dialog]="image"></app-dialog-tool>
+                </div>
+            </mat-tab>
+            <mat-tab [label]="toolGroup.TABLE" *ngIf="config?.isToolGroupConfigured(toolGroup.TABLE)">
+                <div class="tool-wrapper">
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.TABLE, tableToolGroup.TABLE)" [color]="color" [dialog]="table"></app-dialog-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.TABLE, tableToolGroup.MERGE_CELLS)" [color]="color" [button]="mergeTableCell"></app-button-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.TABLE, tableToolGroup.SPLIT_CELL)" [color]="color" [dialog]="splitTableCell"></app-dialog-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.TABLE, tableToolGroup.INSERT_COLUMNS_AND_ROWS)" [color]="color" [dialog]="insertTableColumnsAndRows"></app-dialog-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.TABLE, tableToolGroup.DELETE_COLUMNS_AND_ROWS)" [color]="color" [dialog]="deleteTableColumnsAndRows"></app-dialog-tool>
+                </div>
+            </mat-tab>
+            <mat-tab [label]="toolGroup.LAYOUT" *ngIf="config?.isToolGroupConfigured(toolGroup.LAYOUT)">
+                <div class="tool-wrapper">
+                    <app-select-tool *ngIf="config?.isToolConfigured(toolGroup.LAYOUT, layoutToolGroup.PAGE_SIZE)" [color]="color" [selectTool]="pageSize"></app-select-tool>
+                    <app-select-tool *ngIf="config?.isToolConfigured(toolGroup.LAYOUT, layoutToolGroup.PAGE_ORIENTATION)" [color]="color" [selectTool]="pageOrientation"></app-select-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.LAYOUT, layoutToolGroup.PAGE_MARGINS)" [color]="color" [dialog]="pageMargin"></app-dialog-tool>
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.LAYOUT, layoutToolGroup.PAGE_NUMBER)" [color]="color" [dialog]="pageNumber"></app-dialog-tool>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
+    </mat-card-content>
+</mat-card>
+        
+
+<ng-template let-value="value" #underlineTmpl>
+    <ng-container [ngSwitch]="value">
+        <svg height="20" width="150" *ngSwitchCase="unerlineType.SINGLE">
+            <path d="M0 15 H150 Z" style="stroke:currentColor; stroke-width:1"/>
+        </svg>
+    
+        <svg height="20" width="150" *ngSwitchCase="unerlineType.DOUBLE">
+            <path d="M0 13 H150 Z" style="stroke:currentColor; stroke-width:1"/>
+            <path d="M0 17 H150 Z" style="stroke:currentColor; stroke-width:1"/>
+        </svg>
+    
+        <svg height="20" width="150" *ngSwitchCase="unerlineType.DOTTED">
+            <g fill="none" style="stroke:currentColor; stroke-width:3">
+                <path stroke-dasharray="3,3" d="M0 15 H150" />
+            </g>
+        </svg>
+    
+        <svg height="20" width="150" *ngSwitchCase="unerlineType.DASHED">
+            <g fill="none" style="stroke:currentColor; stroke-width:2">
+                <path stroke-dasharray="10,5" d="M0 15 H150" />
+            </g>
+        </svg>
+    
+        <svg height="20" width="150" *ngSwitchCase="unerlineType.WAVY">
+            <path fill="none" d="M0 15 L5 18 L15 12 L25 18 L35 12 L45 18 L55 12 L65 18 L75 12 L85 18 L95 12 L105 18 L115 12 L125 18 L135 12 L145 18 L155 12 L165 18 L175 12 L180 15" style="stroke:currentColor;stroke-width:2" />
+        </svg>
+    </ng-container>
+</ng-template>
+
+<ng-template let-value="value" #colorPaletteTmpl>
+    <canvas height="50" [style.background-color]="value">
+    </canvas>
+</ng-template>
+
+<ng-template let-value="value" #bulletedListTmpl>
+    <ng-container [ngSwitch]="value">
+        <svg *ngSwitchCase="bulletedListType.HOLLOW_CIRCLE" height="50" width="50">
+            <circle cx="25"cy="35" r="5" style="fill:transparent;stroke:currentColor;stroke-width:3"/>
+        </svg>
+
+        <svg *ngSwitchCase="bulletedListType.SHADED_CIRCLE" height="50" width="50">
+            <circle cx="25"cy="35" r="5" style="fill:currentColor;stroke:currentColor"/>
+        </svg>
+
+        <svg *ngSwitchCase="bulletedListType.SQUARE" height="50" width="50">
+            <rect x="20" y="30" height="20%" width="20%" style="fill:currentColor;stroke:currentColor"/>
+        </svg>
+    </ng-container>
+</ng-template>
+
+<ng-template let-data="data" #tableTmpl>
+    <mat-checkbox [color]="color" [(ngModel)]="data.hasHeader">Header</mat-checkbox>
+    <br/>
+    <mat-checkbox [color]="color" [(ngModel)]="data.hasAutoSerialize">Auto Serialize</mat-checkbox>
+    <br/><br/>
+    <mat-grid-list cols="2" [rowHeight]="data.panelHeight(data.columns)" class="insert-table-dialog">
+        <mat-grid-tile>
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>Rows</mat-label>
+                <input matInput [min]="data.minRows" [(ngModel)]="data.rows" type="number"/>
+            </mat-form-field>
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>Row Height</mat-label>
+                <input matInput [min]="data.minRowHeight" [(ngModel)]="data.rowHeight" type="number"/>
+            </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>Columns</mat-label>
+                <input matInput [min]="data.minColumns" [(ngModel)]="data.columns" type="number"/>
+            </mat-form-field>
+            <ng-container *ngIf="data.hasHeader">
+                <mat-form-field appearance="fill" [color]="color" *ngFor="let header of data.headers(data.columns); let headerNumber = index;">
+                    <mat-label>Header {{headerNumber + 1}}</mat-label>
+                    <input required="required" matInput [(ngModel)]="data.headerLabels[headerNumber]" type="text"/>
+                </mat-form-field>
+            </ng-container>
+        </mat-grid-tile>
+    </mat-grid-list>
+</ng-template>
+
+<ng-template let-data="data" #splitTableCellTmpl>
+    <mat-form-field appearance="fill" [color]="color">
+        <mat-label>Rows</mat-label>
+        <input matInput [min]="data.minRows" [(ngModel)]="data.rows" type="number"/>
+    </mat-form-field>
+    <mat-form-field appearance="fill" [color]="color">
+        <mat-label>Columns</mat-label>
+        <input matInput [min]="data.minColumns" [(ngModel)]="data.columns" type="number"/>
+    </mat-form-field>
+</ng-template>
+
+<ng-template let-data="data" #insertColumnsAndRowsTmpl>
+    <div style = "display:grid;grid-template-columns:1fr 1fr 1fr; gap:20px">
+        <span></span>
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Insert Rows Above</mat-label>
+            <input matInput [min]="data.minRowsAbove" [(ngModel)]="data.insertRowsAbove" type="number"/>
+        </mat-form-field>
+        <span></span>
+
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Insert Colmns Left</mat-label>
+            <input matInput [min]="data.minColumnsToLeft" [(ngModel)]="data.insertColumnsToLeft" type="number"/>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Cell</mat-label>
+            <input matInput type="text" [disabled]="true"/>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Insert Colmns Right</mat-label>
+            <input matInput [min]="data.minColumnsToRight" [(ngModel)]="data.insertColumnsToRight" type="number"/>
+        </mat-form-field>
+        
+        <span></span>
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Insert Rows Below</mat-label>
+            <input matInput [min]="data.minRowsBelow" [(ngModel)]="data.insertRowsBelow" type="number"/>
+        </mat-form-field>
+        <span></span>
+    </div>
+</ng-template>
+
+<ng-template let-data="data" #deleteTableColumnsAndRowsTmpl>
+    <div style="display: grid; grid-template-columns:1fr 1fr 1fr; gap: 20px;">
+        <mat-checkbox [color]="color" [(ngModel)]="data.deleteRows">Rows</mat-checkbox>
+        <mat-checkbox [color]="color" [(ngModel)]="data.deleteColumns">Columns</mat-checkbox>
+        <mat-checkbox [color]="color" [(ngModel)]="data.deleteTable">Table</mat-checkbox>
+    </div>
+    <br>
+</ng-template>
+
+<ng-template let-data="data" let-events="events" #imageTmpl>
+    <mat-grid-list cols="2" rowHeight="800px">
+        <mat-grid-tile>
+            <mat-card [style.width]="data.width()" [style.height]="data.height()" style="padding: 0px;">
+                <mat-card-content style="width:100%; height:100%; margin: 0px; padding:0px;">
+                    <svg *ngIf="data.isShowMask()" style="position:absolute; width:100%; border:none; z-index:2;" fill="rgba(0, 0, 0, 0.5)" stoke="none" [innerHTML]="data.getPassPortPhotoMask()|SafeHtml">
+                    </svg>
+                    <div [style.width]="data.width()" [style.height]="data.height()" style="position:absolute; border: 1px solid currentColor; border-radius: 0px;  background-size: 100% 100%; background-repeat: no-repeat; background-position: 50% 50%;" #previewPhoto></div>
+                </mat-card-content>
+                <mat-card-actions>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; justify-items: center;">
+                        <div>
+                            <button mat-mini-fab [style.margin.px]="5" (click)="events.zoom(previewPhoto, imageControl.ZOOM_IN, image)">
+                                <mat-icon>zoom_in</mat-icon>
+                            </button>
+                        </div>
+                        <div>
+                            <button mat-mini-fab [style.margin.px]="5" (click)="file.click()">
+                                <mat-icon>upload</mat-icon>
+                            </button>
+                            <input type="file" (change)="events.upload($event, previewPhoto, image)" #file style="display:none;"/>
+                        </div>
+                        <div>
+                            <button mat-mini-fab [style.margin.px]="5" (click)="events.zoom(previewPhoto, imageControl.ZOOM_OUT, image)">
+                                <mat-icon>zoom_out</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </mat-card-actions>
+            </mat-card>
+        </mat-grid-tile>
+        <mat-grid-tile>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; column-gap:40px">
+                <div style="display:grid; grid-template-columns: auto auto auto; justify-content: center;">
+                    <div></div>
+                    <div>
+                        <button  mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_TOP, image)">
+                            <mat-icon>arrow_drop_up</mat-icon>
+                        </button>
+                    </div>
+                    <div></div>
+                    <div>
+                        <button mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_LEFT, image)">
+                            <mat-icon>arrow_left</mat-icon>
+                        </button>
+                    </div>
+                    <div></div>
+                    <div>
+                        <button mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_RIGHT, image)">
+                            <mat-icon>arrow_right</mat-icon>
+                        </button>
+                    </div>
+                    <div></div>
+                    <div>
+                        <button mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_BOTTOM, image)">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </button>
+                    </div>
+                    <div></div>
+                </div>
+                <div style="display:grid; grid-template-columns: auto; grid-gap: 20px; justify-content: center;">
+                    <mat-radio-group [(ngModel)]="data.displayType" color="primary">
+                        <div style="display:grid; grid-template-columns: auto auto;grid-gap: 20px; align-items: center;">
+                            <mat-radio-button *ngFor="let displayType of data.getAllDisplayTypes()" [value]="displayType">{{displayType}}</mat-radio-button>
+                        </div>
+                    </mat-radio-group>
+    
+                    <mat-form-field appearance="fill" [color]="color"  *ngIf="imageDisplayType.BACKGROUNG == data.displayType">
+                        <mat-label>Page number</mat-label>
+                        <input min="1" [max]="data.maxPageNumber()" matInput [(ngModel)]="data.pageNumber" type="number"/>
+                    </mat-form-field>
+                    
+    
+                    <mat-form-field appearance="fill" [color]="color" *ngIf="imageDisplayType.BLOCK == data.displayType">
+                        <mat-label>Image Size</mat-label>
+                        <mat-select [(value)]="data.selectedImageSize">
+                            <mat-option *ngFor="let size of data.getImageSizes()" [value]="size.size">{{size.label}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+        </mat-grid-tile>
+    </mat-grid-list>
+</ng-template>
+
+<ng-template let-data="data" let-events="events" #symbolTmpl>
+    <mat-button-toggle-group class="insert-symbol-dialog" [(value)]="data.selected" [style.grid-template-columns]="events.onLoad(symbolFlags.GRID_TEMPLATE_COLUMNS)">
+        <mat-button-toggle 
+            *ngFor="let symbol of events.onLoad(symbolFlags.SYMBOLS); let i = index;" 
+            [class.no-left-border]="events.onLoad(symbolFlags.HAS_LEFT_BORDER, i)" 
+            [class.no-bottom-border]="events.onLoad(symbolFlags.HAS_BOTTOM_BORDER, i)"
+            [value]="symbol"
+        >
+                <span [innerHTML]="symbol"></span>
+        </mat-button-toggle>
+    </mat-button-toggle-group>
+</ng-template>
+
+<ng-template let-data="data" #pageMarginTmpl>
+    <div style="display: grid; grid-template-columns: 1fr; row-gap: 20px;">
+        <mat-checkbox [(ngModel)]="data.isPageMirror" [color]="color">Page Mirror</mat-checkbox>
+    
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; column-gap: 20px; row-gap: 150px;">
+            <div></div>
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>Top</mat-label>
+                <input matInput [(ngModel)]="data.topPadding" type="number"/>
+                <span matSuffix>mm</span>
+            </mat-form-field>
+            <div></div>
+
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>{{data.getLeftLabel()}}</mat-label>
+                <input matInput [(ngModel)]="data.leftPadding" type="number"/>
+                <span matSuffix>mm</span>
+            </mat-form-field>
+            <div></div>
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>{{data.getRightLabel()}}</mat-label>
+                <input matInput [(ngModel)]="data.rightPadding" type="number"/>
+                <span matSuffix>mm</span>
+            </mat-form-field>
+            
+            <div></div>
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>Bottom</mat-label>
+                <input matInput [(ngModel)]="data.bottomPadding" type="number"/>
+                <span matSuffix>mm</span>
+            </mat-form-field>
+            <div></div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template let-data="data" #findTmpl>
+    <mat-form-field appearance="fill" [color]="color">
+        <mat-label>Find Text</mat-label>
+        <input matInput type="text" [(ngModel)]="data.searchText" placeholder="Type text to find here..."/>
+    </mat-form-field>
+</ng-template>
+
+<ng-template let-data="data" #replaceTmpl>
+    <mat-form-field appearance="fill" [color]="color">
+        <mat-label>Find Text</mat-label>
+        <input matInput type="text" [(ngModel)]="data.searchText" placeholder="Type text to find here..."/>
+    </mat-form-field>
+    <mat-form-field appearance="fill" [color]="color">
+        <mat-label>Replace Text</mat-label>
+        <input matInput type="text" [(ngModel)]="data.replaceText" placeholder="Type text to replace here..."/>
+    </mat-form-field>
+</ng-template>
+
+<ng-template let-data="data" #pageNumberTmpl>
+    <mat-grid-list class="insert-page-number-dialog" cols="1">
+        <mat-grid-tile >
+            <div style="display:grid; grid-template-columns: 1fr;row-gap: 20px;">
+                <mat-checkbox [color]="color" [(ngModel)]="data.show">Show</mat-checkbox>
+
+                <div *ngIf="data.show" style="display:grid; grid-template-columns: 1fr 1fr 1fr; row-gap: 20px; column-gap: 5px;">
+                    <label class="mat-body-strong">Position</label>
+                    <label class="mat-body-strong">:</label>
+                    <mat-radio-group [(ngModel)]="data.pageNumberType" color="primary" name="a">
+                        <div style="display:grid; grid-template-columns: 1fr; row-gap: 10px;">
+                            <mat-radio-button *ngFor="let pageNumberType of data.getAllPageNumberTypes()" [value]="pageNumberType">{{pageNumberType}}</mat-radio-button>
+                        </div>
+                    </mat-radio-group>
+                    <label class="mat-body-strong">Alignment</label>
+                    <label class="mat-body-strong">:</label>
+                    <mat-radio-group [(ngModel)]="data.pageNumberAlignment" color="primary" name="b">
+                        <div style="display:grid; grid-template-columns: 1fr; row-gap: 10px;">
+                            <mat-radio-button *ngFor="let label of data.getAllPageNumberAlignmentLabels();" [value]="data.getAllPageNumberAlignmentValues(label)">{{label}}</mat-radio-button>
+                        </div>
+                    </mat-radio-group>
+                </div>
+            </div>
+        </mat-grid-tile>        
+    </mat-grid-list>
+</ng-template>

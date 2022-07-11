@@ -1,0 +1,20 @@
+<mat-button-toggle *ngIf="button.isToggle; else plainButton" (click)="button.click()" [checked]="button.isON" [matTooltip]="button.toolTip">
+    <mat-icon *ngIf="button.hasIcon()" [color]="color">{{button.icon}}</mat-icon>
+    <span style="font-size: 20px;" *ngIf="button.hasLabel()" [innerHTML]="button.label"></span>
+</mat-button-toggle>
+
+<ng-template #plainButton>
+    <button mat-stroked-button [color]="color" (click)="button.click()" [matTooltip]="button.toolTip">
+        <mat-icon *ngIf="button.hasIcon()" [color]="color">{{button.icon}}</mat-icon>
+        <span style="font-size: 20px;" *ngIf="button.hasLabel()" [innerHTML]="button.label"></span>
+    </button>    
+</ng-template>
+
+<mat-form-field appearance="outline" [color]="color">
+    <mat-select panelClass="button-with-select-tool-dropdown-panel" [(value)]="button.selected" [matTooltip]="button.toolTip">
+        <mat-option *ngFor="let option of button.options;" [style.text-align]="'center'" value="{{option.value}}">
+            <span *ngIf="!option.isTemplate" [innerHTML]="option.label"></span>
+            <ng-container *ngIf="option.isTemplate" [ngTemplateOutlet]="option.template" [ngTemplateOutletContext]="{value:option.value}"></ng-container>
+        </mat-option>
+    </mat-select>
+</mat-form-field>

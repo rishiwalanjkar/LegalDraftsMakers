@@ -1,0 +1,76 @@
+@import "../../../../assets/styles/global-variables.scss";
+
+@mixin full-width{
+    @include zero-padding-margin;
+    width: 100%;
+}
+
+@mixin no-border-on-active-div{
+    &:focus{
+        outline: none;
+    }
+}
+
+.border-on-hover{
+    border: $solid-border-1;
+}
+
+.border-on-active{
+    border: $solid-border-2;
+}
+
+.border-on-hover.left, .border-on-active.left{
+    border-right: none;
+}
+
+.border-on-hover.right, .border-on-active.right{
+    border-left: none;
+}
+
+.border-on-hover.header, .border-on-active.header{
+    border-top: none;
+    border-right: none;
+    border-left: none;
+}
+
+.border-on-hover.footer, .border-on-active.footer{
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+}
+
+:host{
+    display:grid;
+
+    .left{
+        @include zero-padding-margin;
+        cursor: pointer;
+    }
+
+    .content{
+        @include zero-padding-margin;
+
+        .header{
+            @include page-number;
+            @include zero-padding-margin;
+            cursor: pointer;
+        }
+
+        .body{
+            @extend .content;
+            @include no-border-on-active-div;
+            overflow-wrap: break-word;
+        }
+
+        .footer{
+            @include page-number;
+            @include zero-padding-margin;
+            cursor: pointer;
+        }
+    }
+
+    .right{
+        @include zero-padding-margin;
+        cursor: pointer;
+    }
+}

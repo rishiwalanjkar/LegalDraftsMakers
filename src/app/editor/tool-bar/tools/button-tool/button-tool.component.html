@@ -1,0 +1,29 @@
+<div *ngIf="button.isToggle then toggleButton else plainButton"></div>
+
+<ng-template #toggleButton>
+    <mat-button-toggle-group *ngIf="button.isGroup(); else soloToggleButton">
+        <mat-button-toggle *ngFor="let soloButtonTool of button" (click)="soloButtonTool.click()" [checked]="soloButtonTool.isON" [matTooltip]="soloButtonTool.toolTip">
+            <mat-icon *ngIf="soloButtonTool.hasIcon()" [color]="color">{{soloButtonTool.icon}}</mat-icon>
+            <span style="font-size: 20px;" *ngIf="soloButtonTool.hasLabel()" [innerHTML]="soloButtonTool.label"></span>
+        </mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <ng-template #soloToggleButton>
+        <mat-button-toggle *ngFor="let soloButtonTool of button" (click)="soloButtonTool.click()" [checked]="soloButtonTool.isON" [matTooltip]="soloButtonTool.toolTip">
+            <mat-icon *ngIf="soloButtonTool.hasIcon()" [color]="color">{{soloButtonTool.icon}}</mat-icon>
+            <span style="font-size: 20px;" *ngIf="soloButtonTool.hasLabel()" [innerHTML]="soloButtonTool.label"></span>
+        </mat-button-toggle>
+    </ng-template>
+</ng-template>
+
+<ng-template #plainButton>
+    <button [color]="color" mat-stroked-button *ngFor="let soloButtonTool of button" (click)="soloButtonTool.click()" [matTooltip]="soloButtonTool.toolTip">
+        <mat-icon *ngIf="soloButtonTool.hasIcon()" [color]="color">{{soloButtonTool.icon}}</mat-icon>
+        <span style="font-size: 20px;" *ngIf="soloButtonTool.hasLabel()" [innerHTML]="soloButtonTool.label"></span>
+</button>
+</ng-template>
+
+
+
+
+

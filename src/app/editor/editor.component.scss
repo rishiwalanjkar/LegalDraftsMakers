@@ -1,0 +1,18 @@
+@import "../../assets/styles/global-variables.scss";
+
+:host{
+    .editable-section{
+        display: flex;
+        justify-content: center;
+
+        .page-container{
+            display: flex;
+            flex-direction: column;
+            .page{
+                margin: 10px 0;
+            }
+        }        
+
+    }
+}
+

@@ -1,1 +1,96 @@
-<p>create-draft-template works!</p>
+<app-editor [config]="editorConfig" (draftChangeEvent)="updateDraft($event)"></app-editor>
+<div class="template-creator">
+    <mat-card>
+        <mat-card-content>
+            <mat-tab-group>
+                <mat-tab label="Label">
+                    <div class="tab-contents">
+                        <mat-radio-group class="grid c-6" [color]="widgetColor" [(ngModel)]="labelTab.data.textBoxChoice">
+                            <mat-radio-button value="plain">Plain Text Box</mat-radio-button>
+                            <mat-radio-button value="divided">Divided Text Box</mat-radio-button>
+                        </mat-radio-group>
+                        <mat-form-field [color]="widgetColor" appearance="fill">
+                            <mat-label>Label / Question</mat-label>
+                            <input matInput placeholder="Enter desired label / question here..." [required]="true">
+                        </mat-form-field>
+                        <div *ngIf="labelTab.isShowDividedTextBox()" class="grid c-4 g-1">
+                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                <mat-label>Parts</mat-label>
+                                <input matInput type="number" min="1" max="5" [required]="true" [(ngModel)]="labelTab.data.textBoxParts">
+                            </mat-form-field>
+                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                <mat-label>Separator Character</mat-label>
+                                <input matInput type="text" [required]="true" [(ngModel)]="labelTab.data.divideTextBoxSeparator">
+                            </mat-form-field>
+                        </div>
+                        <div class="grid c-4 g-1" *ngFor="let part of labelTab.getTextBoxParts(); let i = index">
+                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                <mat-label>Type of Text / Answer {{labelTab.getTypeLengthGroupNumber(i)}}</mat-label>
+                                <mat-select [(ngModel)]="labelTab.data.textBoxTypeLengthGroup[i].type">
+                                    <mat-option value="text">Text</mat-option>
+                                    <mat-option value="number">Number</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                <mat-label>Max Length of Text / Answer {{labelTab.getTypeLengthGroupNumber(i)}}</mat-label>
+                                <input matInput type="number" min="1" [(ngModel)]="labelTab.data.textBoxTypeLengthGroup[i].maxLength" [required]="true">
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </mat-tab>
+                <mat-tab label="Choice">
+                    <div class="tab-contents">
+                        <mat-radio-group class="grid c-8" [color]="widgetColor" [(ngModel)]="choiceTab.data.displayType">
+                            <mat-radio-button value="radio">Radio</mat-radio-button>
+                            <mat-radio-button value="list">List</mat-radio-button>
+                        </mat-radio-group>
+                        <div class="grid c-4 g-1" *ngFor="let option of choiceTab.data.options; let i = index">
+                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                <mat-label>Option {{i+1}}</mat-label>
+                                <input matInput type="text" [(ngModel)]="option.option" [required]="true">
+                            </mat-form-field>
+                            <mat-form-field class="cs-3" [color]="widgetColor" appearance="fill">
+                                <mat-label>Output {{i+1}}</mat-label>
+                                <input matInput type="text" [(ngModel)]="option.output" [required]="true">
+                            </mat-form-field>
+                        </div>
+                        <div class="grid c-4 g-1">
+                            <button mat-raised-button [color]="widgetColor" (click)="choiceTab.addOption()">Add More Option</button>
+                            <button mat-raised-button *ngIf="choiceTab.isShowRemoveButton()" color="accent" (click)="choiceTab.removeOption()">Remove Option</button>
+                        </div>
+                    </div>
+                </mat-tab>
+                <mat-tab label="Date">
+                    <div class="tab-contents">
+                        <mat-radio-group class="grid g-2" [color]="widgetColor" [(ngModel)]="dateTab.data.fieldType">
+                            <mat-radio-button value="today">Today's Date</mat-radio-button>
+                            <mat-radio-button value="date">Date</mat-radio-button>
+                            <mat-radio-button value="age">Age</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                </mat-tab>
+                <mat-tab label="Photo">
+                    <div class="tab-contents">
+                        <mat-radio-group class="grid g-2" [color]="widgetColor" [(ngModel)]="photoTab.data.photoType">
+                            <mat-radio-button value="passport">Passport Photo</mat-radio-button>
+                            <mat-radio-button value="adhar">Adhar Card</mat-radio-button>
+                            <mat-radio-button value="4*6">4*6</mat-radio-button>
+                            <mat-radio-button value="5*7">5*7</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                </mat-tab>
+            </mat-tab-group>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+        <mat-card-content>
+
+        </mat-card-content>
+    </mat-card>
+
+    <div class="draft" [innerHTML]="latestDraft.innerHTML|SafeHtml">
+
+    </div>
+</div>
+    

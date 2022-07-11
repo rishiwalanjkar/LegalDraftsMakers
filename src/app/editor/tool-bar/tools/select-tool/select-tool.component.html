@@ -1,0 +1,13 @@
+<mat-form-field appearance="fill" [color]="color" class="select-tool" [style.width.px]="selectTool.width">
+    <mat-label>
+        <mat-icon *ngIf="selectTool.hasIcon()"><b>{{selectTool.icon}}</b></mat-icon>
+        <span *ngIf="selectTool.hasLabel()">{{selectTool.label}}</span>
+    </mat-label>
+    <mat-select [(value)]="selectTool.selected" (selectionChange)="selectTool.click(selectTool.selected)" [matTooltip]="selectTool.toolTip">
+        <mat-option *ngFor="let option of selectTool.options;" [value]="option.value">
+            <mat-icon *ngIf="!option.isTemplate && option.hasIcon()">{{option.icon}}</mat-icon>
+            <span *ngIf="!option.isTemplate" [innerHTML]="option.label"></span>
+            <ng-container *ngIf="option.isTemplate" [ngTemplateOutlet]="option.template" [ngTemplateOutletContext]="{value:option.value}"></ng-container>
+        </mat-option>
+    </mat-select>
+</mat-form-field>

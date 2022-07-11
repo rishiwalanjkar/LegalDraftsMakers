@@ -1,4 +1,219 @@
 /* You can add global styles to this file, and also import other style files */
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { 
+    margin: 0; 
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.button-with-select-tool-dropdown-panel{
+    position: relative;
+    left: -45px;
+}
+
+mat-grid-list.insert-table-dialog, mat-grid-list.insert-page-number-dialog{
+    mat-grid-tile{
+        div.mat-grid-tile-content{
+            align-items: flex-start;
+            justify-content: flex-start;
+            flex-direction: column;
+        }
+    }
+}
+
+table.auto-serialize{
+    counter-reset: serial-number;
+
+    tr:not(.split) td:first-child{
+        width: 3em;
+        text-align: center;
+        font-weight: bold;
+
+        &::before{
+            counter-increment: serial-number;
+            content: counter(serial-number)  ". ";
+        }
+    }
+}
+
+table.border{
+    border:1px solid currentColor;
+    border-collapse:collapse;
+
+    tr, thead tr, tbody tr{
+        border:1px solid currentColor;
+        border-collapse:collapse;
+    }
+
+    tr td, tbody tr td, thead tr td, tr th, tbody tr th, thead tr th{
+        border:1px solid currentColor;
+        border-collapse:collapse;
+        vertical-align:top;
+        padding:5px;
+    }
+}
+
+table.break-all{
+    word-break:break-all;
+}
+
+.grid{
+    display: grid;
+    
+    .cs-2{
+        grid-column-end: span 2;
+    }
+
+    .cs-3{
+        grid-column-end: span 3;
+    }
+
+    .cs-4{
+        grid-column-end: span 4;
+    }
+
+    .cs-5{
+        grid-column-end: span 5;
+    }
+
+    .cs-6{
+        grid-column-end: span 6;
+    }
+
+    .cs-7{
+        grid-column-end: span 7;
+    }
+
+    .cs-8{
+        grid-column-end: span 8;
+    }
+
+}
+
+.grid.c-1{
+    grid-template-columns: 1fr;
+}
+
+.grid.c-2{
+    grid-template-columns: 1fr 1fr;
+}
+
+.grid.c-3{
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.grid.c-4{
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.grid.c-5{
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.grid.c-6{
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.grid.c-7{
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.grid.c-8{
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.grid.g-1{
+    gap: 10px;
+}
+
+.grid.g-2{
+    gap: 20px;
+}
+
+.grid.g-3{
+    gap: 30px;
+}
+
+.grid.g-4{
+    gap: 40px;
+}
+
+.grid.g-5{
+    gap: 50px;
+}
+
+.grid.g-6{
+    gap: 60px;
+}
+
+.grid.g-7{
+    gap: 70px;
+}
+
+.grid.g-8{
+    gap: 80px;
+}
+
+.grid.cg-1{
+    column-gap: 10px;
+}
+
+.grid.cg-2{
+    column-gap: 20px;
+}
+
+.grid.cg-3{
+    column-gap: 30px;
+}
+
+.grid.cg-4{
+    column-gap: 40px;
+}
+
+.grid.cg-5{
+    column-gap: 50px;
+}
+
+.grid.cg-6{
+    column-gap: 60px;
+}
+
+.grid.cg-7{
+    column-gap: 70px;
+}
+
+.grid.cg-8{
+    column-gap: 80px;
+}
+
+.grid.rg-1{
+    row-gap: 10px;
+}
+
+.grid.rg-2{
+    row-gap: 20px;
+}
+
+.grid.rg-3{
+    row-gap: 30px;
+}
+
+.grid.rg-4{
+    row-gap: 40px;
+}
+
+.grid.rg-5{
+    row-gap: 50px;
+}
+
+.grid.rg-6{
+    row-gap: 60px;
+}
+
+.grid.rg-7{
+    row-gap: 70px;
+}
+
+.grid.rg-8{
+    row-gap: 80px;
+}

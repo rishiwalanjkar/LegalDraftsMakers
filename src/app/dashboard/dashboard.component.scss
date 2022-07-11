@@ -1,17 +1,15 @@
-.sidenav-container {
-  height: 100%;
-}
+:host{
+  mat-toolbar.mat-primary {
+    position: sticky;
+    top: 0px;
+    z-index: 2;
+  }
 
-.sidenav {
-  width: 300px;
-}
+  mat-sidenav-container{
+    overflow: visible;
 
-.sidenav .mat-toolbar {
-  background: inherit;
-}
-
-.mat-toolbar.mat-primary {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+    mat-sidenav-content{
+      overflow: visible;
+    }
+  }
 }
