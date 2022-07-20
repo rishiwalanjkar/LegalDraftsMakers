@@ -1,36 +1,31 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
+import { FontService } from './font.service';
 import { Page } from './page/page/page';
 import { PageComponent } from './page/page/page.component';
-import { Conversion, Font, FontLanguage, ImageDisplayType, PageOrientation, SelectOption, SelectTool, Tool, ToolCommand, WordCase } from './tool-bar/tools/tool-bar';
-
-const KEY_BOARD_CHARACTERS  = ["`", "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "q", "w", "e", 
-                                "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "z", "x", "c", "v", "b", "n", "m", 
-                                ",", ".", "/", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "{", "}", "|", "A", "S", "D", "F", "G", "H", "J", "K", "L", ":", "\"", "Z", "X",
-                                "C", "V", "B", "N", "M", "<", ">", "?"
-                              ];
+import { Conversion, Font, ImageDisplayType, PageOrientation, SelectTool, Tool, ToolCommand, WordCase } from './tool-bar/tools/tool-bar';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EditorService {
-  private deletePageSubject         = new Subject<number>();
-  private addPageSubject            = new Subject<Page>();
-  private pageSizeSubject           = new Subject<number[]>();
-  private pageMarginSubject         = new Subject<any>();
-  private triggerToolSubject        = new Subject<ToolCommand>();
-  private emitPageChangeSubject     = new Subject<HTMLDivElement>();
-  private pageSelection!:Selection;
-  private pageSelectionRange!:Range;
+  private _deletePageSubject         = new Subject<number>();
+  private _addPageSubject            = new Subject<Page>();
+  private _pageSizeSubject           = new Subject<number[]>();
+  private _pageMarginSubject         = new Subject<any>();
+  private _triggerToolSubject        = new Subject<ToolCommand>();
+  private _pageChangeSubject         = new Subject<HTMLDivElement>();
+  private _pageSelection!:Selection;
+  private _pageSelectionRange!:Range;
 
-  constructor() { }
+  constructor(private _fontService:FontService) { }
 
-  get keyBoardCharacters():string[]{
-    return KEY_BOARD_CHARACTERS;
+  get pageSelectionRange() {
+    return this._pageSelectionRange;
   }
 
   triggerCommand(_command:ToolCommand, data:any):void{
-    let selectedElement:any = this.pageSelectionRange?.commonAncestorContainer;
+    let selectedElement:any = this._pageSelectionRange?.commonAncestorContainer;
 
     switch(_command){
       case ToolCommand.UNDO:
@@ -74,8 +69,8 @@ export class EditorService {
             let range = document.createRange();
             range.setStart(document.getElementsByTagName("mark-found-start")[document.getElementsByTagName("mark-found-start").length-1], 0);
             range.setEnd(document.getElementsByTagName("mark-found-end")[document.getElementsByTagName("mark-found-end").length-1], 0);
-            this.pageSelection.removeAllRanges()
-            this.pageSelection.addRange(range);
+            this._pageSelection.removeAllRanges()
+            this._pageSelection.addRange(range);
 
             let bodyRect          = document.body.getBoundingClientRect(),
                 elementRect       = document.getElementsByTagName("mark-found-start")[document.getElementsByTagName("mark-found-start").length-1].getBoundingClientRect(),
@@ -149,44 +144,12 @@ export class EditorService {
         break;
 
       case ToolCommand.SET_FONT:
-        let fontName:string             = data.fontName,
-            fontFamily:string           = data.fontFamily,
-            isConvert:boolean           = !!data.isConvert,
-            keyMappings:any             = data.keyMappings,
-            spanFontElement:HTMLElement = document.createElement("span");
-
-            spanFontElement.appendChild(this.pageSelectionRange.cloneContents());
-            let initialFontHTML:string = spanFontElement.innerHTML.toString().replace(/[<][\/]*span[\sa-zA-Z"']*[>]/g,'').replace(/&nbsp;/g, ' ');
-
-            spanFontElement.style.fontFamily = fontFamily;
-
-            if(isConvert){
-              let transformedHTML:string  = initialFontHTML.replace(/[^<\/>]\w+/g, txt => {
-                                                                    txt = txt.replace(/\w/g, char => {
-                                                                                      return keyMappings[char] ? keyMappings[char] : char;
-                                                                                    });
-
-                                                                    return txt;
-                                                                  });
-
-              spanFontElement.innerHTML   = `${transformedHTML}`;
-            }
-
-            this.pageSelectionRange.deleteContents();
-            this.pageSelectionRange.insertNode(spanFontElement);
-
-            let range = document.createRange();
-            range.setStart(spanFontElement, 0);
-            range.setEnd(spanFontElement, (initialFontHTML.length));
-
-            (window.getSelection() as Selection).removeAllRanges();
-            (window.getSelection() as Selection).addRange(range);
-
+        this._fontService.convertSelection(data, this._pageSelectionRange);
         break;
 
       case ToolCommand.SET_FONT_SIZE:
         window.getSelection()?.removeAllRanges();
-        window.getSelection()?.addRange(this.pageSelectionRange);
+        window.getSelection()?.addRange(this._pageSelectionRange);
         document.execCommand("fontSize", true, data);
 
         if("FONT" != selectedElement.tagName) 
@@ -202,7 +165,7 @@ export class EditorService {
             callCounter           = 0,
             spanElement           = document.createElement("span");
 
-        spanElement.appendChild(this.pageSelectionRange.cloneContents());
+        spanElement.appendChild(this._pageSelectionRange.cloneContents());
         let initialHTML           = spanElement.innerHTML.toString().replace(/[<][\/]*span[>]/g,'').replace(/&nbsp;/g, ' '),
             transformedHTML!:string;
 
@@ -263,8 +226,8 @@ export class EditorService {
 
         if( transformedHTML !== initialHTML){
           spanElement.innerHTML = `${transformedHTML}`;
-          this.pageSelectionRange.deleteContents();
-          this.pageSelectionRange.insertNode(spanElement);
+          this._pageSelectionRange.deleteContents();
+          this._pageSelectionRange.insertNode(spanElement);
         } 
         break;
 
@@ -338,7 +301,6 @@ export class EditorService {
         if("UL" == selectedElement.tagName)
           selectedElement.type = data;
 
-        setTimeout(()=> this.updatePagesView(0, JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[1]) , 1);
         break;
 
       case ToolCommand.NUMBERED_LIST:
@@ -350,12 +312,11 @@ export class EditorService {
         if("OL" == selectedElement.tagName)
           selectedElement.type = data;
 
-        setTimeout(()=> this.updatePagesView(0, JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[1]) , 1);
         break;
 
       case ToolCommand.INSERT_TABLE:
         window.getSelection()?.removeAllRanges();
-        window.getSelection()?.addRange(this.pageSelectionRange);
+        window.getSelection()?.addRange(this._pageSelectionRange);
 
         let tableHTML       = `<table class="${data.hasAutoSerialize ? 'auto-serialize':''} border break-all" width="100%">`;
 
@@ -390,12 +351,11 @@ export class EditorService {
 
         document.execCommand("insertHTML", true, tableHTML);
 
-        setTimeout(()=> this.updatePagesView(0, JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[1]) , 1);
         break;
 
       case ToolCommand.MERGE_CELLS:
-        let anchorTdElement:any         = this.pageSelection.anchorNode,
-            focusTdElement:any          = this.pageSelection.focusNode,
+        let anchorTdElement:any         = this._pageSelection.anchorNode,
+            focusTdElement:any          = this._pageSelection.focusNode,
             anchorParentTrElement:any,
             focusParentTrElement:any,
             anchorCellIndex:number,
@@ -558,8 +518,8 @@ export class EditorService {
         break;
 
       case ToolCommand.DELETE_COLUMNS_AND_ROWS:
-        let selectionStartTdElement:any             = this.pageSelection.anchorNode,
-            selectionEndTdElement:any               = this.pageSelection.focusNode,
+        let selectionStartTdElement:any             = this._pageSelection.anchorNode,
+            selectionEndTdElement:any               = this._pageSelection.focusNode,
             selectionStartParentTrElement:any,
             selectionEndParentTrElement:any,
             selectionParentTableElement:any,
@@ -637,16 +597,15 @@ export class EditorService {
 
       case ToolCommand.INSERT_SYMBOL:
         window.getSelection()?.removeAllRanges();
-        window.getSelection()?.addRange(this.pageSelectionRange);
+        window.getSelection()?.addRange(this._pageSelectionRange);
 
         document.execCommand("insertHTML", true, data.selected);
 
-        setTimeout(()=> this.updatePagesView(0, JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[1]) , 1);
         break;
 
       case ToolCommand.INSERT_IMAGE:
         window.getSelection()?.removeAllRanges();
-        window.getSelection()?.addRange(this.pageSelectionRange);
+        window.getSelection()?.addRange(this._pageSelectionRange);
 
         switch(data.displayType as ImageDisplayType){
           case ImageDisplayType.BLOCK:
@@ -655,8 +614,6 @@ export class EditorService {
             data.imageHTML.style.position = "relative";
             document.execCommand("insertHTML", true, data.imageHTML.outerHTML);
 
-            setTimeout(()=> this.updatePagesView(0, JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[1]) , 1);
-            
             break;
           case ImageDisplayType.BACKGROUNG:
             let pageNumber:number = data.pageNumber,
@@ -701,20 +658,63 @@ export class EditorService {
         Page.setShowPageNumber(data.show, data.pageNumberType);
         Page.setPageNumberAlignment(data.pageNumberAlignment);
         break;
+
+      case ToolCommand.PERSONAL_INFO:
+        window.getSelection()?.removeAllRanges();
+        window.getSelection()?.addRange(this._pageSelectionRange);
+
+        let personalInfoElement:HTMLElement                   = document.createElement("block"),
+            personalInfoBlocksContainer:HTMLDivElement        = document.createElement("div"),
+            personalInfoBlockCaptionContainer:HTMLDivElement  = document.createElement("div"),
+            spanCurlyBraceElement:HTMLSpanElement             = document.createElement("span"),
+            spanCaptionElement:HTMLSpanElement                = document.createElement("span");
+
+        personalInfoElement.classList.add("grid", "c-3", "cg-8");
+        personalInfoBlocksContainer.classList.add("grid", "c-1", "cs-2", "rg-2");
+        personalInfoElement.append(personalInfoBlocksContainer);
+
+        if(0 < data.blockCaption.toString().trim().length){
+          personalInfoBlockCaptionContainer.classList.add("brace-right");
+          spanCurlyBraceElement.classList.add("curly");
+          personalInfoBlockCaptionContainer.append(spanCurlyBraceElement);
+
+          let captionWrapper:HTMLDivElement = document.createElement("div");
+          captionWrapper.classList.add("grid", "c-1", "v-ac");
+          captionWrapper.style.height = "100%"
+          captionWrapper.append(data.blockCaption.toString().trim());
+
+          spanCaptionElement.append(captionWrapper);
+          personalInfoBlockCaptionContainer.append(spanCaptionElement);
+          personalInfoElement.append(personalInfoBlockCaptionContainer);
+        }
+
+        for(const block of data.blocks) {
+          let blockContainer:HTMLDivElement = document.createElement("div");
+          blockContainer.innerHTML = (block as string).replace(/\n/g, "<br/>");
+          personalInfoBlocksContainer.append(blockContainer);
+        }
+
+        document.execCommand("insertHTML", true, personalInfoElement.outerHTML);
+        break;
     }
 
     if(!!selectedElement?.focus)
       selectedElement?.focus();
+
+    let pageHeight = PageOrientation.PORTRAIT == (Tool.tools[ToolCommand.PAGE_ORIENTATION] as SelectTool).selected 
+                      ? JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[1]
+                        : JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[0];
+    setTimeout(()=> this.updatePagesView(0, pageHeight), 1);
   }
 
   updateToolView():void{
-    this.pageSelectionRange = window.getSelection()!.getRangeAt(0);
-    let parentElement       = this.pageSelectionRange?.commonAncestorContainer.parentElement,
-    transmuteTools          = new Array<any>(Object.keys(ToolCommand).length/2).fill(false);
+    this._pageSelectionRange  = window.getSelection()!.getRangeAt(0);
+    let parentElement         = this._pageSelectionRange?.commonAncestorContainer.parentElement,
+    transmuteTools            = new Array<any>(Object.keys(ToolCommand).length/2).fill(false);
 
-    if(parentElement?.classList.contains("content"))
+    if(!parentElement || parentElement!.classList.contains("content"))
       return;
-    
+
     while(!["body", "header-body", "footer-body"].some((r)=> parentElement?.classList.contains(r))){
         switch(true){
           case "B" == parentElement?.tagName:
@@ -737,85 +737,48 @@ export class EditorService {
   }
 
   addPageRequest(newPageBodyContents:Page):void{
-    this.addPageSubject.next(newPageBodyContents);
+    this._addPageSubject.next(newPageBodyContents);
   }
 
   onAddPage():Observable<Page>{
-    return this.addPageSubject.asObservable();
+    return this._addPageSubject.asObservable();
   }
 
   deletePageRequest(pageIndex:number):void{
-    this.deletePageSubject.next(pageIndex);
+    this._deletePageSubject.next(pageIndex);
   }
 
   onDeletePage():Observable<number>{
-    return this.deletePageSubject.asObservable();
+    return this._deletePageSubject.asObservable();
   }
 
   changePageSize(newPageSize:number[]):void{
-    this.pageSizeSubject.next(newPageSize);
+    this._pageSizeSubject.next(newPageSize);
   }
 
   onPageSizeChange():Observable<number[]>{
-    return this.pageSizeSubject.asObservable();
+    return this._pageSizeSubject.asObservable();
   }
 
   changePageMargin(newPageMargins:any):void{
-    this.pageMarginSubject.next(newPageMargins);
+    this._pageMarginSubject.next(newPageMargins);
   }
 
   onPageMarginChange():Observable<any>{
-    return this.pageMarginSubject.asObservable();
+    return this._pageMarginSubject.asObservable();
   }
 
   triggerTool(toolCommand:ToolCommand){
-    this.triggerToolSubject.next(toolCommand);
+    this._triggerToolSubject.next(toolCommand);
   }
 
   onTriggerTool():Observable<ToolCommand>{
-    return this.triggerToolSubject.asObservable();
+    return this._triggerToolSubject.asObservable();
   }
 
   updatePageSelection(){
-    this.pageSelection      = window.getSelection() as Selection;
-    this.pageSelectionRange = this.pageSelection.getRangeAt(0);
-  }
-
-  convertChar(key:string, selectedFont:Font, eventType?:string):void {
-
-    if(FontLanguage.ENGLISH == selectedFont.language) return;
-
-    if(!!eventType && "keyup" ==  eventType) return;
-
-    let keyMappings:any   = selectedFont.keyMappings,
-        transformedChar   = keyMappings[key],
-        textNode;
-
-    if(!transformedChar || "string" != typeof transformedChar) return;
-
-    textNode              = document.createTextNode(transformedChar);
-    this.pageSelectionRange.insertNode(textNode);
-
-    let range = document.createRange();
-    range.setStart(textNode, (transformedChar.length));
-    range.setEnd(textNode, (transformedChar.length));
-
-    (window.getSelection() as Selection).removeAllRanges();
-    (window.getSelection() as Selection).addRange(range);
-
-    if("ा" != transformedChar || !textNode!.previousSibling) return;
-
-    switch(true){
-      case "्" == textNode!.previousSibling!.textContent!.charAt(textNode!.previousSibling!.textContent!.length -1):
-        textNode!.previousSibling!.textContent = textNode!.previousSibling!.textContent!.slice(0, (textNode!.previousSibling!.textContent!.length -1));
-        textNode!.textContent = "";
-        break;
-
-      case "अ" == textNode!.previousSibling!.textContent:
-        textNode!.previousSibling!.textContent = "आ";
-        textNode!.textContent = "";
-        break;
-    }
+    this._pageSelection      = window.getSelection() as Selection;
+    this._pageSelectionRange = this._pageSelection.getRangeAt(0);
   }
 
   updatePagesView(activePageIndex:number, allowedBodyHeightInMM:number):void{
@@ -825,7 +788,9 @@ export class EditorService {
         allowedBodyHeightInPixel:number   = Math.round(allowedBodyHeightInMM * Conversion.MM_TO_PIXEL_FACTOR);
 
     for(let pageIndex=0; pageIndex<PageComponent.instanceCounter;pageIndex++){
-        allPageBodyElements.push(document.getElementById(`app-page-${pageIndex}`)!.children[1].children[1] as HTMLElement);
+      if(!document.getElementById(`app-page-${pageIndex}`)) return;
+ 
+      allPageBodyElements.push(document.getElementById(`app-page-${pageIndex}`)!.children[1]!.children[1] as HTMLElement);
     }
 
     this.redressPartialPages(allPageBodyElements, activePageIndex, allowedBodyHeightInPixel);
@@ -842,8 +807,9 @@ export class EditorService {
           lastAppendedElement!:HTMLElement;
 
       if(0 < pageIndex && "" == pageBodyElement.innerHTML.trim()){
-        if(pageBodyElement === document.activeElement)
-          allPageBodyElements[pageIndex-1].focus();
+        if(pageBodyElement === document.activeElement) {
+          this.focusElementEnd(allPageBodyElements[pageIndex-1] as HTMLElement);
+        }
         
         this.deletePageRequest(pageIndex);
         continue;
@@ -867,18 +833,22 @@ export class EditorService {
 
   mitigateOverflownPages(allPageBodyElements:HTMLElement[], activePageIndex:number, allowedBodyHeightInPixel:number):void{
     let removableLastChildBuffer:any[]  = [],
-        isOverflown:boolean             = false;
+        isCursorReachedPageEnd:boolean  = false;
 
     for(let pageIndex=activePageIndex; pageIndex<allPageBodyElements.length; pageIndex++){
       let pageBodyElement:HTMLElement  = allPageBodyElements[pageIndex];
+
+      if(isCursorReachedPageEnd && !!removableLastChildBuffer.length)
 
       while(!!removableLastChildBuffer.length)
         pageBodyElement.prepend(removableLastChildBuffer.shift());
 
       while(pageBodyElement.scrollHeight > allowedBodyHeightInPixel && !!pageBodyElement.lastChild){
-          isOverflown = true;
-          removableLastChildBuffer.push(pageBodyElement.lastChild);
-          pageBodyElement.lastChild.remove();
+        if(pageBodyElement.lastChild == this._pageSelection.focusNode || pageBodyElement.lastChild == this._pageSelection.focusNode?.parentElement)
+          isCursorReachedPageEnd  = true;
+
+        removableLastChildBuffer.push(pageBodyElement.lastChild);
+        pageBodyElement.lastChild.remove();
       }
     }
 
@@ -894,239 +864,37 @@ export class EditorService {
       this.addPageRequest(newPage);
     }
 
-    this.focusNextPage(isOverflown);
+    if(isCursorReachedPageEnd)
+      this.focusNextPage(removableLastChildBuffer.length);
   }
 
-  focusNextPage(isOverflown:boolean){
-    if((this.pageSelection.focusNode == (this.pageSelection.focusNode?.parentElement as HTMLElement).closest(".body")?.lastChild 
-        || this.pageSelection.focusNode?.parentElement == (this.pageSelection.focusNode?.parentElement as HTMLElement).closest(".body")?.lastChild
-        ) && isOverflown ) {
-      let focusedpageId     = (this.pageSelection.focusNode?.parentElement as HTMLElement).closest("app-page")?.id as String,
-          idLength:number   = focusedpageId?.length as number,
-          focusPageIndex    = parseInt(focusedpageId?.charAt(idLength -1)),
-          range, focusElement;
+  focusNextPage(childrenToFocusIndex:number){
+    let focusedpageId     = (this._pageSelection.focusNode?.parentElement as HTMLElement).closest("app-page")?.id as String,
+        idLength:number   = focusedpageId?.length as number,
+        focusPageIndex    = parseInt(focusedpageId?.charAt(idLength -1));
 
-      if(document.getElementById("app-page-" + (focusPageIndex + 1)))
-        range               = document.createRange();
-        focusElement        = (document.getElementById("app-page-" + (focusPageIndex + 1))?.children[1]?.children[1].firstChild as HTMLElement);
-
-        if(!!range && !! focusElement) {
-          range?.setStart(focusElement, 0);
-          range?.setEnd(focusElement, 0);
-          this.pageSelection.removeAllRanges();
-          this.pageSelection.addRange(range);
-        }
-    }
-  }
-
-  fetchFonts():SelectOption[]{
-    let selectFontOptions:SelectOption[] = [],
-        rawData:Font[] = [
-                            {
-                              fontName      : "Arial",
-                              fontFamily    : "Arial, Helvetica, sans-serif",
-                              isConvert     : false,
-                              language      : FontLanguage.ENGLISH
-                            },
-                            {
-                              fontName      : "Shivaji01",
-                              fontFamily    : "'Mukta', sans-serif",
-                              isConvert     : true,
-                              language      : FontLanguage.DEVNAGARI,
-                              keyMappings   : {
-                                                "`": "्र",
-                                                "1":"१",
-                                                "2":"२",
-                                                "3":"३",
-                                                "4":"४",
-                                                "5":"५",
-                                                "6":"६",
-                                                "7":"७",
-                                                "8":"८",
-                                                "9":"९",
-                                                "0":"१०",
-                                                "-":"र्",
-                                                "=":"ड़",
-                                                "~":"त्र",
-                                                "!":"ॐ",
-                                                "@":"क्",
-                                                "#":"ख्",
-                                                "$":"रू",
-                                                "%":"त्",
-                                                "^":"ॅ",
-                                                "&":"ज्ञ",
-                                                "*":"ह्",
-                                                "(":"ह्य",
-                                                ")":"हृ",
-                                                "_":"द्द",
-                                                "+":"ट्ट",
-                                                "q":"थ्",
-                                                "w":"द्ध",
-                                                "e":"ए",
-                                                "r":"र",
-                                                "t":"त",
-                                                "y":"य्",
-                                                "u":"ु",
-                                                "i":"ि",
-                                                "o":"े",
-                                                "p":"प",
-                                                "[":"इ",
-                                                "]":"उ",
-                                                "\\":"्",
-                                                "a":"ा",
-                                                "s":"स्",
-                                                "d":"द",
-                                                "f":"फ",
-                                                "g":"ग्",
-                                                "h":"ह",
-                                                "j":"ज्",
-                                                "k":"क",
-                                                "l":"ल्",
-                                                ";":"ॡ",
-                                                "'":"\'",
-                                                "z":"ठ",
-                                                "x":"क्ष्",
-                                                "c":"च्",
-                                                "v":"व्",
-                                                "b":"ब्",
-                                                "n":"न्",
-                                                "m":"म्",
-                                                ",":",",
-                                                ".":".",
-                                                "/":"्र",
-                                                "Q":"ध्",
-                                                "W":"द्व",
-                                                "E":"श्र",
-                                                "R":"ृ",
-                                                "T":"ट",
-                                                "Y":"ष्",
-                                                "U":"ू",
-                                                "I":"ी",
-                                                "O":"ै",
-                                                "P":"प्",
-                                                "{":"ठ्ठ",
-                                                "}":"ऊ",
-                                                "|":"",
-                                                "A":"अ",
-                                                "S":"श्",
-                                                "D":"ड",
-                                                "F":"फ्",
-                                                "G":"घ्",
-                                                "H":"ञ",
-                                                "J":"झ्",
-                                                "K":"ख",
-                                                "L":"ळ",
-                                                ":":":",
-                                                "\"":"\"",
-                                                "Z":"ढ",
-                                                "X":"श्",
-                                                "C":"छ",
-                                                "V":"द्य",
-                                                "B":"भ्",
-                                                "N":"ण्",
-                                                "M":"ं",
-                                                "<":"त्त्",
-                                                ">":"क्त",
-                                                "?":"ॠ"
-                                              }              
-                            },
-                            {
-                              fontName      : "Kruti 10",
-                              fontFamily    : "'Mukta', sans-serif",
-                              isConvert     : true,
-                              language      : FontLanguage.DEVNAGARI,
-                              keyMappings   : {
-                                                "`":"",
-                                                "~":"",
-                                                "!":"",
-                                                "@":"",
-                                                "#":"",
-                                                "$":"",
-                                                "%":"",
-                                                "^":"",
-                                                "&":"",
-                                                "*":"",
-                                                "(":"",
-                                                ")":"",
-                                                "_":"",
-                                                "+":"",
-                                                "q":"",
-                                                "w":"",
-                                                "e":"",
-                                                "r":"",
-                                                "t":"",
-                                                "y":"",
-                                                "u":"",
-                                                "i":"",
-                                                "o":"",
-                                                "p":"",
-                                                "[":"",
-                                                "]":"",
-                                                "\\":"",
-                                                "a":"",
-                                                "s":"",
-                                                "d":"",
-                                                "f":"",
-                                                "g":"",
-                                                "h":"",
-                                                "j":"",
-                                                "k":"",
-                                                "l":"",
-                                                ";":"",
-                                                "'":"",
-                                                "z":"",
-                                                "x":"",
-                                                "c":"",
-                                                "v":"",
-                                                "b":"",
-                                                "n":"",
-                                                "m":"",
-                                                ",":"",
-                                                ".":"",
-                                                "/":"",
-                                                "Q":"",
-                                                "W":"",
-                                                "E":"",
-                                                "R":"",
-                                                "T":"",
-                                                "Y":"",
-                                                "U":"",
-                                                "I":"",
-                                                "O":"",
-                                                "P":"",
-                                                "{":"",
-                                                "}":"",
-                                                "|":"",
-                                                "A":"",
-                                                "S":"",
-                                                "D":"",
-                                                "F":"",
-                                                "G":"",
-                                                "H":"",
-                                                "J":"",
-                                                "K":"",
-                                                "L":"",
-                                                ":":"",
-                                                "\"":"",
-                                                "Z":"",
-                                                "X":"",
-                                                "C":"",
-                                                "V":"",
-                                                "B":"",
-                                                "N":"",
-                                                "M":"",
-                                                "<":"",
-                                                ">":"",
-                                                "?":""
-                                              }
-                            }                      
-                          ];
+    if(isNaN(focusPageIndex)) return;
     
-    for(let data of rawData){
-      selectFontOptions.push(new SelectOption(data.fontName, data));
-    }
+    setTimeout(()=> {
+      let elementToFocus  = document.getElementById("app-page-" + (focusPageIndex + 1))?.children[1]?.children[1].children[childrenToFocusIndex] as HTMLElement;
+          
+      this.focusElementEnd(elementToFocus);
+    }, 2);
+  }
 
-    return selectFontOptions;
+  focusElementEnd(elementToFocus:HTMLElement){
+    let range = new Range();
+
+    while(!!elementToFocus.lastChild)
+      elementToFocus    = elementToFocus.lastChild as HTMLElement;
+
+    let offset          = (Node.TEXT_NODE == elementToFocus.nodeType ) ? (elementToFocus as Node).nodeValue!.length : 0;
+
+    range.setStart(elementToFocus, offset);
+    range.setEnd(elementToFocus, offset);
+
+    this._pageSelection.removeAllRanges();
+    this._pageSelection.addRange(range);
   }
 
   emitPageChange():void{
@@ -1134,6 +902,17 @@ export class EditorService {
 
     for(let pageIndex=0; pageIndex<PageComponent.instanceCounter;pageIndex++){
       let clone:HTMLElement           = document.getElementById(`app-page-${pageIndex}`)?.cloneNode(true) as HTMLElement;
+
+      if(!clone) continue;
+
+      clone.style.border                                                = "1px dashed currentColor";
+      (clone.children[0] as HTMLDivElement).style.border                = "none";
+
+      (clone.children[1] as HTMLDivElement).style.border                = "none";
+      (clone.children[1].firstChild as HTMLDivElement).style.border     = "none";
+      (clone.children[1].lastChild as HTMLDivElement).style.border      = "none";
+
+      (clone.children[2] as HTMLDivElement).style.border                = "none";
 
       (clone.children[1].children[0] as HTMLDivElement).contentEditable = "false";
       (clone.children[1].children[1] as HTMLDivElement).contentEditable = "false";
@@ -1150,10 +929,10 @@ export class EditorService {
     pagesWrapper.style.margin         = "0px";
     pagesWrapper.style.padding        = "0px";
 
-    this.emitPageChangeSubject.next(pagesWrapper);
+    this._pageChangeSubject.next(pagesWrapper);
   }
 
   onPageChange():Observable<HTMLDivElement>{
-    return this.emitPageChangeSubject.asObservable();
+    return this._pageChangeSubject.asObservable();
   }
 }

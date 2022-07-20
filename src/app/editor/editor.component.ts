@@ -1,10 +1,10 @@
-import { Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { EditorService } from './editor.service';
 import { Page } from './page/page/page';
 import { PageComponent } from './page/page/page.component';
-import {  DialogTool, FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup, Tool, ToolCommand, ToolGroup } from './tool-bar/tools/tool-bar';
+import {  BlockToolGroup, DialogTool, FileToolGroup, Font, HomeToolGroup, LayoutToolGroup, TableToolGroup, Tool, ToolCommand, ToolGroup } from './tool-bar/tools/tool-bar';
 
 export class EditorConfig{
 
@@ -12,9 +12,11 @@ export class EditorConfig{
     for(const group of Object.values(ToolGroup)) {
       this.toolGroup[group] = [];
     }
+
+    this.toolGroup[ToolGroup.HOME].push(HomeToolGroup.SET_FONT, HomeToolGroup.SET_FONT_SIZE, HomeToolGroup.BOLD, HomeToolGroup.ITALIC, HomeToolGroup.UNDERLINE);
   }
 
-  isToolConfigured(toolGroup:ToolGroup, tool:FileToolGroup|HomeToolGroup|TableToolGroup|LayoutToolGroup):boolean{
+  isToolConfigured(toolGroup:ToolGroup, tool:FileToolGroup|HomeToolGroup|TableToolGroup|LayoutToolGroup|BlockToolGroup):boolean{
     return !!this.toolGroup[toolGroup].includes(tool);
   }
 
@@ -23,7 +25,7 @@ export class EditorConfig{
   }
 
   setTools(toolGroup:ToolGroup, tools:any[]):void{
-    this.toolGroup[toolGroup] = tools;
+    this.toolGroup[toolGroup] = this.toolGroup[toolGroup].concat(tools);
   }
 }
 
@@ -32,27 +34,28 @@ export class EditorConfig{
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements OnDestroy {
+export class EditorComponent implements OnDestroy, AfterViewInit {
 
   @Input() config?:EditorConfig;
   @Output() draftChangeEvent = new EventEmitter<HTMLDivElement>();
+  @Output() fontChangeEvent = new EventEmitter<Font>();
 
   color:string = "primary";
   pageGroup!:FormGroup;
-  _onDeletePageSubsription!:Subscription;
-  _onAddPageSubsription!:Subscription;
-  _onPageSizeChange!:Subscription;
-  _onPageMarginChange!:Subscription;
-  _onPageChange!:Subscription;
-
+  private _onDeletePage!:Subscription;
+  private _onAddPage!:Subscription;
+  private _onPageSizeChange!:Subscription;
+  private _onPageMarginChange!:Subscription;
+  private _onPageChange!:Subscription;
+  
   constructor(private _editorService:EditorService) {
     this.addPage();
 
-    this._onAddPageSubsription = this._editorService.onAddPage().subscribe((page:Page) => {
+    this._onAddPage = this._editorService.onAddPage().subscribe((page:Page) => {
       this.addPage(page);
     });
 
-    this._onDeletePageSubsription = this._editorService.onDeletePage().subscribe((pageIndex) => {
+    this._onDeletePage = this._editorService.onDeletePage().subscribe((pageIndex) => {
       if(0 != pageIndex) {
         this.pages.removeAt(pageIndex);
         PageComponent.instanceCounter--;
@@ -63,6 +66,7 @@ export class EditorComponent implements OnDestroy {
       for(let formControl of this.pages.controls) {
         formControl.value.setSize(newPageSize);
       }
+
       setTimeout(()=> this._editorService.updatePagesView(0, this.pageHeight) , 1);
     });
 
@@ -81,7 +85,7 @@ export class EditorComponent implements OnDestroy {
 
     this._onPageChange = this._editorService.onPageChange().subscribe((draftElement:HTMLDivElement)=>{
       this.draftChangeEvent.emit(draftElement);
-    })
+    });
   }
 
   addPage(page:Page = new Page()):void{
@@ -113,9 +117,13 @@ export class EditorComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._onAddPageSubsription.unsubscribe();
-    this._onDeletePageSubsription.unsubscribe();
+    this._onAddPage.unsubscribe();
+    this._onDeletePage.unsubscribe();
     this._onPageSizeChange.unsubscribe();
     this._onPageMarginChange.unsubscribe();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this._editorService.emitPageChange(), 20);
   }
 }

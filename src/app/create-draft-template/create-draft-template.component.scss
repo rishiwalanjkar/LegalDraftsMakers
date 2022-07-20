@@ -1,28 +1,20 @@
 :host{
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-
-    app-editor, div.template-creator{
-        border: 3px solid currentColor;
+        
+    mat-card{
+        word-wrap: break-word;
+        width: calc(100% - 30px);
+        padding: 15px;
+        text-align: center;
+        position: sticky;
+        display: block;
+        top : 0px;
+        z-index: 2;
     }
 
-    div.template-creator{
+    div.draft{
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap : 10px;
-
-        mat-card{
-            word-wrap: break-word;
-            min-height: 70px;
-            width: calc(100% - 30px);
-            padding: 15px;
-            text-align: center;
-        }
-
-        div.draft{
-            border: 1px dashed currentColor;
-        }
+        justify-content: center;
     }
 }
 

@@ -1,10 +1,10 @@
 <mat-card>
     <mat-card-content>
-        <mat-tab-group [color]="color" [(selectedIndex)]="selectedTabIndex">
+        <mat-tab-group class="tool-group" [color]="color" [(selectedIndex)]="selectedTabIndex">
             <mat-tab [label]="toolGroup.FILE" *ngIf="config?.isToolGroupConfigured(toolGroup.FILE)">
                 <div class="tool-wrapper">
-                    <app-button-tool [color]="color" [button]="print"></app-button-tool>
-                    <app-button-tool [color]="color" [button]="save"></app-button-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.FILE, fileToolGroup.PRINT)" [color]="color" [button]="print"></app-button-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.FILE, fileToolGroup.SAVE)" [color]="color" [button]="save"></app-button-tool>
                     <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.FILE, fileToolGroup.FIND)" [color]="color" [dialog]="find"></app-dialog-tool>
                     <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.FILE, fileToolGroup.FIND_AND_REPLACE)" [color]="color" [dialog]="replace"></app-dialog-tool>
                 </div>
@@ -13,11 +13,11 @@
                 <div class="tool-wrapper">
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.UNDO)" [color]="color" [button]="undo"></app-button-tool>
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.REDO)" [color]="color" [button]="redo"></app-button-tool>
-                    <app-select-tool [color]="color" [selectTool]="font"></app-select-tool>
-                    <app-select-tool [color]="color" [selectTool]="fontSize"></app-select-tool>
-                    <app-button-tool [color]="color" [button]="bold"></app-button-tool>
-                    <app-button-tool [color]="color" [button]="italic"></app-button-tool>
-                    <app-button-with-select-tool [color]="color" [button]="underline"></app-button-with-select-tool>
+                    <app-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SET_FONT)" [color]="color" [selectTool]="font"></app-select-tool>
+                    <app-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SET_FONT_SIZE)" [color]="color" [selectTool]="fontSize"></app-select-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.BOLD)" [color]="color" [button]="bold"></app-button-tool>
+                    <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.ITALIC)" [color]="color" [button]="italic"></app-button-tool>
+                    <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.UNDERLINE)" [color]="color" [button]="underline"></app-button-with-select-tool>
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SUPERSCRIPT)" [color]="color" [button]="superscript"></app-button-tool>
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SUBSCRIPT)" [color]="color" [button]="subscript"></app-button-tool>
                     <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.CHANGE_CASE)" [color]="color" [button]="changeCase"></app-button-with-select-tool>
@@ -47,6 +47,11 @@
                     <app-select-tool *ngIf="config?.isToolConfigured(toolGroup.LAYOUT, layoutToolGroup.PAGE_ORIENTATION)" [color]="color" [selectTool]="pageOrientation"></app-select-tool>
                     <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.LAYOUT, layoutToolGroup.PAGE_MARGINS)" [color]="color" [dialog]="pageMargin"></app-dialog-tool>
                     <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.LAYOUT, layoutToolGroup.PAGE_NUMBER)" [color]="color" [dialog]="pageNumber"></app-dialog-tool>
+                </div>
+            </mat-tab>
+            <mat-tab [label]="toolGroup.BLOCK" *ngIf="config?.isToolGroupConfigured(toolGroup.BLOCK)">
+                <div class="tool-wrapper">
+                    <app-dialog-tool *ngIf="config?.isToolConfigured(toolGroup.BLOCK, blockToolGroup.PERSONAL_INFO)" [color]="color" [dialog]="personalInfo"></app-dialog-tool>
                 </div>
             </mat-tab>
         </mat-tab-group>
@@ -363,4 +368,30 @@
             </div>
         </mat-grid-tile>        
     </mat-grid-list>
+</ng-template>
+
+<ng-template let-data="data" #personalInfoTmpl>
+    <div class="grid c-1 rg-3">
+        <mat-form-field appearance="fill">
+            <mat-label>Number of Blocks</mat-label>
+            <input [(ngModel)]="data.blockCount" min="1" type="number" matInput/>
+        </mat-form-field>
+        <div class="grid c-2 cg-8">
+            <div class="grid c-1 rg-2">
+                <mat-form-field *ngFor="let block of data.getDummyBlocks(data.blockCount); let i = index;" appearance="fill">
+                    <mat-label>{{data.getIndividualBlockLabel(i)}}</mat-label>
+                    <textarea style="height: 100px;" matInput [(ngModel)]="data.blocks[i]" (keydown)="_fontService.convertChar($event, blockArea)" #blockArea></textarea>
+                </mat-form-field>
+            </div>
+            <div class="brace-right">
+                <span class="curly"></span>
+                <div class="grid c-1 v-ac" style="height: 100%;">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Block Group Caption</mat-label>
+                        <input matInput [(ngModel)]="data.blockCaption" (keydown)="_fontService.convertChar($event, blockCaption)" #blockCaption/>
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+    </div>
 </ng-template>

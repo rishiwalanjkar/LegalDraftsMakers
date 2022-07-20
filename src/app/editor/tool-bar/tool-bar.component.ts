@@ -2,7 +2,8 @@ import { AfterViewInit, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, 
 import { Subscription } from 'rxjs';
 import { EditorConfig } from '../editor.component';
 import { EditorService } from '../editor.service';
-import { Underline, ColorPalette, ToolFactory, Tool, ButtonWithSelectTool, BulletedList, DialogTool, SymbolFlag, ToolGroup, ToolCommand, SelectTool, ImageDisplayType, ImageControl, FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup } from './tools/tool-bar';
+import { FontService } from '../font.service';
+import { Underline, ColorPalette, ToolFactory, Tool, ButtonWithSelectTool, BulletedList, DialogTool, SymbolFlag, ToolGroup, ToolCommand, SelectTool, ImageDisplayType, ImageControl, FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup, BlockToolGroup } from './tools/tool-bar';
 
 
 @Component({
@@ -12,10 +13,11 @@ import { Underline, ColorPalette, ToolFactory, Tool, ButtonWithSelectTool, Bulle
 })
 export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() config?:EditorConfig;
-  fileToolGroup                    = FileToolGroup;
-  homeToolGroup                    = HomeToolGroup;
-  tableToolGroup                   = TableToolGroup;
-  layoutToolGroup                  = LayoutToolGroup;
+  fileToolGroup                     = FileToolGroup;
+  homeToolGroup                     = HomeToolGroup;
+  tableToolGroup                    = TableToolGroup;
+  layoutToolGroup                   = LayoutToolGroup;
+  blockToolGroup                    = BlockToolGroup;
   @Input() color!:string;
 
   selectedTabIndex:number           = 1;
@@ -54,6 +56,7 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
   textColor:Tool                    = ToolFactory.create(ToolCommand.FORECOLOR);
   highlight:Tool                    = ToolFactory.create(ToolCommand.HIGHLIGHT);
   pageNumber:Tool                   = ToolFactory.create(ToolCommand.PAGE_NUMBER);
+  personalInfo:Tool                 = ToolFactory.create(ToolCommand.PERSONAL_INFO);
   
   @ViewChild("findTmpl") findTmpl!:TemplateRef<any>;
   @ViewChild("replaceTmpl") replaceTmpl!:TemplateRef<any>;
@@ -69,6 +72,7 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('underlineTmpl') underlineTmpl!:TemplateRef<any>;
   @ViewChild('colorPaletteTmpl') colorPaletteTmpl!:TemplateRef<any>;
   @ViewChild('pageNumberTmpl') pageNumberTmpl!:TemplateRef<any>;
+  @ViewChild('personalInfoTmpl') personalInfoTmpl!:TemplateRef<any>;
 
   toolGroup                         = ToolGroup;
   bulletedListType                  = BulletedList;
@@ -78,7 +82,7 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
   colorPalette                      = ColorPalette;
   imageDisplayType                  = ImageDisplayType;
 
-  constructor(private cdr: ChangeDetectorRef, private _editorService:EditorService) {
+  constructor(private cdr: ChangeDetectorRef, private _editorService:EditorService, public _fontService:FontService) {
     Tool.setEditorService(this._editorService);
 
     this.triggerToolSubscription = this._editorService.onTriggerTool().subscribe((toolCommand:ToolCommand)=>{
@@ -107,8 +111,9 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
     (this.image as DialogTool).setContent(this.imageTmpl);
     (this.symbol as DialogTool).setContent(this.symbolTmpl);
     (this.pageNumber as DialogTool).setContent(this.pageNumberTmpl);
+    (this.personalInfo as DialogTool).setContent(this.personalInfoTmpl);
 
-    (this.font as SelectTool).setOptions(this._editorService.fetchFonts());
+    setTimeout(() => (this.font as SelectTool).setOptions(this._fontService.fetchFonts()), 1);
     (this.underline as ButtonWithSelectTool).setOptions(this.underlineTmpl, Underline);
     (this.textColor as ButtonWithSelectTool).setOptions(this.colorPaletteTmpl, ColorPalette);
     (this.highlight as ButtonWithSelectTool).setOptions(this.colorPaletteTmpl, ColorPalette);

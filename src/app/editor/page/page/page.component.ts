@@ -1,9 +1,11 @@
+import { FocusMonitor } from '@angular/cdk/a11y';
 import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
-import { Component, ElementRef, HostBinding, HostListener, Input, OnDestroy, Optional, Self } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, HostBinding, HostListener, Input, OnDestroy, Optional, Self } from '@angular/core';
 import { ControlValueAccessor, NgControl } from '@angular/forms';
 import { MatFormFieldControl } from '@angular/material/form-field';
 import { Subject } from 'rxjs';
 import { EditorService } from '../../editor.service';
+import { FontService } from '../../font.service';
 import { Font, FontLanguage, SelectTool, Tool, ToolCommand} from '../../tool-bar/tools/tool-bar';
 import { Page } from './page';
 
@@ -53,7 +55,6 @@ export class PageComponent implements MatFormFieldControl<Page>, ControlValueAcc
 
   set placeholder(placeholder:string){
     this._placeholder = placeholder;
-    this.stateChanges.next();
   }
 
   get empty(): boolean{
@@ -71,7 +72,6 @@ export class PageComponent implements MatFormFieldControl<Page>, ControlValueAcc
 
   set required(value:BooleanInput){
     this._required = coerceBooleanProperty(value);
-    this.stateChanges.next();
   }
 
   @Input()
@@ -90,13 +90,14 @@ export class PageComponent implements MatFormFieldControl<Page>, ControlValueAcc
 
   constructor(private _elementRef: ElementRef<HTMLElement>,
               @Optional() @Self() public ngControl:NgControl,
-              private _editorService:EditorService) {
+              private _editorService:EditorService,
+              private _fontService:FontService) {
                 
     if(this.ngControl != null) {
       this.ngControl.valueAccessor = this;
     }
   }
-
+  
   ngOnDestroy(): void {
     this.stateChanges.complete();
   }
@@ -118,12 +119,6 @@ export class PageComponent implements MatFormFieldControl<Page>, ControlValueAcc
   }
 
   onContainerClick(event: MouseEvent): void {
-    if (!this.focused) {
-      this.focused = true;
-      this.stateChanges.next();
-    }
-
-    (this._elementRef.nativeElement.children[1].children[1] as HTMLElement).focus();
     this._editorService.updateToolView();
   }
 
@@ -134,31 +129,28 @@ export class PageComponent implements MatFormFieldControl<Page>, ControlValueAcc
       case ["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(event.key):
         this._editorService.updateToolView();
         break;
-      
-      case this._editorService.keyBoardCharacters.includes(event.key):
-        let selectedFont      = ((Tool.tools[ToolCommand.SET_FONT] as SelectTool).selected as Font);
-
-        if(FontLanguage.ENGLISH != selectedFont.language){
-          event.preventDefault();
-          this._editorService.convertChar(event.key, selectedFont, event.type);
-        }
-        
-        this._editorService.updatePagesView(parseInt(this.id.charAt(this.id.length-1)), this.value.bodyHeight);
-        break;
 
       default:
+        this._fontService.convertChar(event, this._editorService.pageSelectionRange);
         this._editorService.updatePagesView(parseInt(this.id.charAt(this.id.length-1)), this.value.bodyHeight);
     }
   }
 
+  @HostListener("focusin")
+  onFocusIn(){
+    if(!this.touched) {
+      this.touched = true;
+      this.onTouched();
+    }
+
+    this.focused = true;
+    this.stateChanges.next();
+  }
+
   @HostListener("focusout", ["$event"])
   onFocusOut(event:FocusEvent){
-    if (!this._elementRef.nativeElement.contains(event.relatedTarget as Element)) {
-      this.touched = true;
       this.focused = false;
-      this.onTouched();
       this.stateChanges.next();
-    }
   }
 
   @HostListener("mouseup")

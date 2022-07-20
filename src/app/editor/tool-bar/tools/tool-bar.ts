@@ -29,7 +29,8 @@ export enum ToolGroup{
     FILE    = "File",
     HOME    = "Home",
     TABLE   = "Table",
-    LAYOUT  = "Layout"
+    LAYOUT  = "Layout",
+    BLOCK   = "Block"
 }
 
 export enum PageOrientation{
@@ -182,6 +183,8 @@ export enum SymbolFlag{
 }
 
 export enum FileToolGroup{
+    PRINT,
+    SAVE,
     FIND,
     FIND_AND_REPLACE
 }
@@ -189,6 +192,11 @@ export enum FileToolGroup{
 export enum HomeToolGroup{
     UNDO,
     REDO,
+    SET_FONT,
+    SET_FONT_SIZE,
+    BOLD,
+    ITALIC,
+    UNDERLINE,
     SUPERSCRIPT,
     SUBSCRIPT,
     CHANGE_CASE,
@@ -216,6 +224,10 @@ export enum LayoutToolGroup{
     PAGE_ORIENTATION,
     PAGE_MARGINS,
     PAGE_NUMBER
+}
+
+export enum BlockToolGroup{
+    PERSONAL_INFO
 }
 
 export enum ToolCommand{
@@ -255,7 +267,8 @@ export enum ToolCommand{
     PAGE_SIZE,
     PAGE_ORIENTATION,
     PAGE_MARGINS,
-    PAGE_NUMBER
+    PAGE_NUMBER,
+    PERSONAL_INFO
 }
 
 export abstract class Tool{
@@ -1320,6 +1333,25 @@ export class ToolFactory{
                 })
 
                 tool = pageNumber;
+                break;
+            
+            case ToolCommand.PERSONAL_INFO:
+                let personalInfo:DialogTool = new DialogTool(option);
+                personalInfo.setToolTip("Insert personal information");
+                personalInfo.setIcon("info");
+                personalInfo.setCaption("Person Details Block");
+                personalInfo.setToolGroup(ToolGroup.BLOCK);
+                personalInfo.setWidth(700);
+
+                personalInfo.setData({
+                    blockCount              : 1,
+                    blockCaption            : "",
+                    blocks                  : [""],
+                    getIndividualBlockLabel : (blockIndex:number) => 1 == personalInfo.getData().blockCount ? "Block" : "Block " + (blockIndex + 1),
+                    getDummyBlocks          : (blockCount:number) => new Array(personalInfo.getData().blockCount)
+                });
+
+                tool = personalInfo;
                 break;
         }
 

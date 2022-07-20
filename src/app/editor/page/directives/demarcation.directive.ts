@@ -1,4 +1,4 @@
-import { AfterViewChecked, Directive, ElementRef, HostListener } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Directive, ElementRef, HostListener } from '@angular/core';
 import { FormControlName } from '@angular/forms';
 import { EditorService } from '../../editor.service';
 import { ToolCommand } from '../../tool-bar/tools/tool-bar';

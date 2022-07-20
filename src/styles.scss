@@ -90,6 +90,35 @@ table.break-all{
 
 }
 
+.grid.h-al{
+    justify-items: left;
+}
+
+
+.grid.h-ac{
+    justify-items: center;
+}
+
+
+.grid.h-ar{
+    justify-items: right;
+}
+
+
+.grid.v-as{
+    align-items: start;
+}
+
+
+.grid.v-ac{
+    align-items: center;
+}
+
+
+.grid.v-ae{
+    align-items: end;
+}
+
 .grid.c-1{
     grid-template-columns: 1fr;
 }
@@ -217,3 +246,52 @@ table.break-all{
 .grid.rg-8{
     row-gap: 80px;
 }
+
+
+$dim1: 2em;
+.brace-right{
+    position: relative;
+
+    span.curly {
+        height: calc(100% - 15px);
+        padding-right: $dim1;
+        position: absolute;
+        margin: 0 $dim1 $dim1;
+        background-image: 
+        radial-gradient(circle at 36px 0px,  rgba(255,255,255,0) 16.5px, currentColor 15.5px, currentColor 19.5px, rgba(255,255,255,0) 18.5px), 
+        radial-gradient(circle at 36px 36px, rgba(255,255,255,0) 16.5px, currentColor 15.5px, currentColor 19.5px, rgba(255,255,255,0) 18.5px);
+        background-size:  36px 36px;
+        background-position: center;
+        background-repeat: no-repeat;
+        left:-70px
+    }
+
+    span.curly:before {
+        border-right: 3px solid currentColor;
+        border-top: 1px solid transparent;
+        border-top-right-radius:  30px 20%;
+        height: 50%;
+        content: "";
+        position: absolute;
+        top: -5px;
+        left: -14px;
+        box-sizing: border-box;
+        margin-top: -10px;
+        width: $dim1;
+    }
+
+    span.curly:after {
+        border-right: 3px solid currentColor;
+        border-bottom: 1px solid transparent; 
+        border-bottom-right-radius: 30px 20%;
+        height: 50%;
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        right: 14px;
+        box-sizing: border-box;
+        margin-bottom: -10px;
+        width: $dim1;
+    }
+}
+
