@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
+import { MatAgeField } from '../custom-mat-form-fields/mat-age-field/mat-age-field.component';
 import { EditorConfig } from '../editor/editor.component';
 import { EditorService } from '../editor/editor.service';
 import { FontService } from '../editor/font.service';

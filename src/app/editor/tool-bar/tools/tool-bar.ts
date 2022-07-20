@@ -1,4 +1,5 @@
 import { TemplateRef } from "@angular/core";
+import { MatAgeField } from "src/app/custom-mat-form-fields/mat-age-field/mat-age-field.component";
 import { EditorService } from "../../editor.service";
 import { Page, PageDefaults, PageNumberAlignment, PageNumberType } from "../../page/page/page";
 
@@ -1341,14 +1342,15 @@ export class ToolFactory{
                 personalInfo.setIcon("info");
                 personalInfo.setCaption("Person Details Block");
                 personalInfo.setToolGroup(ToolGroup.BLOCK);
-                personalInfo.setWidth(700);
+                personalInfo.setWidth(900);
 
                 personalInfo.setData({
                     blockCount              : 1,
                     blockCaption            : "",
                     blocks                  : [""],
+                    defaultBirthDate        : new MatAgeField(),
                     getIndividualBlockLabel : (blockIndex:number) => 1 == personalInfo.getData().blockCount ? "Block" : "Block " + (blockIndex + 1),
-                    getDummyBlocks          : (blockCount:number) => new Array(personalInfo.getData().blockCount)
+                    getDummyBlocks          : () => new Array(personalInfo.getData().blockCount)
                 });
 
                 tool = personalInfo;

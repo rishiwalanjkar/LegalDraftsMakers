@@ -377,11 +377,18 @@
             <input [(ngModel)]="data.blockCount" min="1" type="number" matInput/>
         </mat-form-field>
         <div class="grid c-2 cg-8">
-            <div class="grid c-1 rg-2">
-                <mat-form-field *ngFor="let block of data.getDummyBlocks(data.blockCount); let i = index;" appearance="fill">
-                    <mat-label>{{data.getIndividualBlockLabel(i)}}</mat-label>
-                    <textarea style="height: 100px;" matInput [(ngModel)]="data.blocks[i]" (keydown)="_fontService.convertChar($event, blockArea)" #blockArea></textarea>
-                </mat-form-field>
+            <div class="grid c-1 rg-3">
+                <div class="grid c-1 rg-2" *ngFor="let block of data.getDummyBlocks(); let i = index;">
+                    <mat-form-field appearance="fill">
+                        <mat-label>{{data.getIndividualBlockLabel(i)}}</mat-label>
+                        <input matInput [(ngModel)]="data.blocks[i].name" (keydown)="_fontService.convertChar($event, blockName)" #blockName/>
+                    </mat-form-field>
+                    <div class="grid c-2 cg-2">
+                        <app-mat-age-field [value]="data.defaultBirthDate" appearance="fill"></app-mat-age-field>
+                        <app-mat-age-field [value]="data.defaultBirthDate"></app-mat-age-field>
+                    </div>
+                    <app-mat-age-field [value]="data.defaultBirthDate"></app-mat-age-field>
+                </div>
             </div>
             <div class="brace-right">
                 <span class="curly"></span>

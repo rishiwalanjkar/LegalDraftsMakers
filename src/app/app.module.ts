@@ -8,20 +8,11 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LayoutModule } from '@angular/cdk/layout';
 import { DashboardComponent } from './dashboard/dashboard.component';
+
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatInputModule } from '@angular/material/input';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { MatSelectModule } from '@angular/material/select';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { SideNavComponent } from './side-nav/side-nav.component';
 import { BlankDraftComponent } from './blank-draft/blank-draft.component';
@@ -36,8 +27,7 @@ import { UploadFontsComponent } from './upload-fonts/upload-fonts.component';
 import { CreateDraftTemplateComponent } from './create-draft-template/create-draft-template.component';
 
 import { EditorModule } from './editor/editor.module';
-import { MainPipeModule } from './main-pipe/main-pipe.module';
-import { MatDividedInputComponent } from './custom-mat-form-fields/mat-divided-input/mat-divided-input.component';
+import { SharedModule } from './shared/shared.module'
 
 @NgModule({
   declarations: [
@@ -53,8 +43,7 @@ import { MatDividedInputComponent } from './custom-mat-form-fields/mat-divided-i
     ExtractEmailDocumentsComponent,
     ExtractWhatsappDocumentsComponent,
     UploadFontsComponent,
-    CreateDraftTemplateComponent,
-    MatDividedInputComponent
+    CreateDraftTemplateComponent
   ],
   imports: [
     BrowserModule,
@@ -62,23 +51,12 @@ import { MatDividedInputComponent } from './custom-mat-form-fields/mat-divided-i
     BrowserAnimationsModule,
     LayoutModule,
     MatToolbarModule,
-    MatButtonModule,
-    MatButtonToggleModule,
     MatSidenavModule,
-    MatIconModule,
     MatListModule,
     MatExpansionModule,
     HttpClientModule,
     EditorModule,
-    MatCardModule,
-    MatTabsModule,
-    MatInputModule,
-    MainPipeModule,
-    MatRadioModule,
-    MatSelectModule,
-    MatGridListModule,
-    FormsModule ,
-    ReactiveFormsModule
+    SharedModule
   ],
   providers: [],
   bootstrap: [AppComponent]
