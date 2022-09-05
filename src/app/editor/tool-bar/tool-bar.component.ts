@@ -1,9 +1,11 @@
 import { AfterViewInit, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { ImageType } from 'src/app/custom-mat-form-fields/mat-image-upload-field/mat-image-upload-field.component';
+import { Font, FontService } from 'src/app/font/font.service';
+import { LanguageService } from 'src/app/language/language.service';
 import { EditorConfig } from '../editor.component';
 import { EditorService } from '../editor.service';
-import { FontService } from '../font.service';
-import { Underline, ColorPalette, ToolFactory, Tool, ButtonWithSelectTool, BulletedList, DialogTool, SymbolFlag, ToolGroup, ToolCommand, SelectTool, ImageDisplayType, ImageControl, FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup, BlockToolGroup } from './tools/tool-bar';
+import { Underline, ColorPalette, ToolFactory, Tool, ButtonWithSelectTool, BulletedList, DialogTool, SymbolFlag, ToolGroup, ToolCommand, SelectTool, FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup, BlockToolGroup } from './tools/tool-bar';
 
 
 @Component({
@@ -12,7 +14,7 @@ import { Underline, ColorPalette, ToolFactory, Tool, ButtonWithSelectTool, Bulle
   styleUrls: ['./tool-bar.component.scss']
 })
 export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() config?:EditorConfig;
+  @Input() config!:EditorConfig;
   fileToolGroup                     = FileToolGroup;
   homeToolGroup                     = HomeToolGroup;
   tableToolGroup                    = TableToolGroup;
@@ -51,6 +53,7 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
   bold:Tool                         = ToolFactory.create(ToolCommand.BOLD);
   italic:Tool                       = ToolFactory.create(ToolCommand.ITALIC);
   underline:Tool                    = ToolFactory.create(ToolCommand.UNDERLINE);
+  lineSpacing:Tool                  = ToolFactory.create(ToolCommand.LINE_SPACING)
   superscript:Tool                  = ToolFactory.create(ToolCommand.SUPERSCRIPT);
   subscript:Tool                    = ToolFactory.create(ToolCommand.SUBSCRIPT);
   textColor:Tool                    = ToolFactory.create(ToolCommand.FORECOLOR);
@@ -77,18 +80,22 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
   toolGroup                         = ToolGroup;
   bulletedListType                  = BulletedList;
   symbolFlags                       = SymbolFlag;
-  imageControl                      = ImageControl;
   unerlineType                      = Underline;
   colorPalette                      = ColorPalette;
-  imageDisplayType                  = ImageDisplayType;
+  imageType                         = ImageType;
 
-  constructor(private cdr: ChangeDetectorRef, private _editorService:EditorService, public _fontService:FontService) {
-    Tool.setEditorService(this._editorService);
+  constructor(private cdr: ChangeDetectorRef, 
+    private _editorService:EditorService, 
+    public fontService:FontService,
+    public languageService:LanguageService) {
 
-    this.triggerToolSubscription = this._editorService.onTriggerTool().subscribe((toolCommand:ToolCommand)=>{
-      this.selectedTabIndex = Object.values(ToolGroup).indexOf(Tool.tools[toolCommand].toolGroup);
-      setTimeout(()=>Tool.tools[toolCommand].triggerClick(), 0.01);
-    });
+      Tool.setLanguageService(this.languageService);
+      Tool.setEditorService(this._editorService);
+
+      this.triggerToolSubscription = this._editorService.onTriggerTool().subscribe((toolCommand:ToolCommand)=>{
+        this.selectedTabIndex = Object.values(ToolGroup).indexOf(Tool.tools[toolCommand].toolGroup);
+        setTimeout(()=>Tool.tools[toolCommand].triggerClick(), 0.01);
+      });
   }
 
   ngOnDestroy(): void {
@@ -113,16 +120,20 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
     (this.pageNumber as DialogTool).setContent(this.pageNumberTmpl);
     (this.personalInfo as DialogTool).setContent(this.personalInfoTmpl);
 
-    setTimeout(() => (this.font as SelectTool).setOptions(this._fontService.fetchFonts()), 1);
+    setTimeout(() => (this.font as SelectTool).setOptions(this.fontService.fetchFonts()), 1);
     (this.underline as ButtonWithSelectTool).setOptions(this.underlineTmpl, Underline);
     (this.textColor as ButtonWithSelectTool).setOptions(this.colorPaletteTmpl, ColorPalette);
     (this.highlight as ButtonWithSelectTool).setOptions(this.colorPaletteTmpl, ColorPalette);
     (this.bulletedList as ButtonWithSelectTool).setOptions(this.bulletedListTmpl, BulletedList);
   }
 
-  ngOnInit(): void {
+  get selectedFont():Font{
+    return (this.font as SelectTool).selected;
   }
 
+  ngOnInit(): void {
+    Tool.setConfig(this.config);
+  }
 }
 
 

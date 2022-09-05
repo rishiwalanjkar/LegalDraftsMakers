@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { FontService } from './font.service';
+import { ImageType } from '../custom-mat-form-fields/mat-image-upload-field/mat-image-upload-field.component';
+import { FontService } from '../font/font.service';
 import { Page } from './page/page/page';
 import { PageComponent } from './page/page/page.component';
-import { Conversion, Font, ImageDisplayType, PageOrientation, SelectTool, Tool, ToolCommand, WordCase } from './tool-bar/tools/tool-bar';
+import { Conversion, PageOrientation, SelectTool, Tool, ToolCommand, WordCase } from './tool-bar/tools/tool-bar';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class EditorService {
   private _pageMarginSubject         = new Subject<any>();
   private _triggerToolSubject        = new Subject<ToolCommand>();
   private _pageChangeSubject         = new Subject<HTMLDivElement>();
+  private _pageViewUpdateSubject     = new Subject<void>();
   private _pageSelection!:Selection;
   private _pageSelectionRange!:Range;
 
@@ -256,6 +258,13 @@ export class EditorService {
           selectedElement.style.textDecorationStyle = data;
         break;
 
+      case ToolCommand.LINE_SPACING:
+        let pages:HTMLCollection = document.getElementsByTagName("app-page");
+
+        for(let i = 0 ; i < pages.length; i++)
+          (pages[i] as HTMLDivElement).style.lineHeight = data;
+        break;
+  
       case ToolCommand.SUPERSCRIPT:
         document.execCommand("superscript");
         break;
@@ -607,19 +616,21 @@ export class EditorService {
         window.getSelection()?.removeAllRanges();
         window.getSelection()?.addRange(this._pageSelectionRange);
 
-        switch(data.displayType as ImageDisplayType){
-          case ImageDisplayType.BLOCK:
-            data.imageHTML.contentEditable = false;
-            data.imageHTML.style.display = "block";
-            data.imageHTML.style.position = "relative";
-            document.execCommand("insertHTML", true, data.imageHTML.outerHTML);
+        let imageHTML = data.form.controls["imageUploadControl"].value.imageHTML;
 
-            break;
-          case ImageDisplayType.BACKGROUNG:
-            let pageNumber:number = data.pageNumber,
+        switch(data.form.controls["selectedImageTypeControl"].value as ImageType){
+          case ImageType.BACKGROUND:
+            let pageNumber:number = data.form.controls["pageNumberControl"].value,
                 pageElement       = document.getElementById("app-page-" + (pageNumber -1));
 
-            pageElement!.style.backgroundImage = data.imageHTML.style.backgroundImage;
+            pageElement!.style.backgroundImage = imageHTML.style.backgroundImage;
+            break;
+
+          default:
+            imageHTML.contentEditable = false;
+            imageHTML.style.display = "block";
+            imageHTML.style.position = "relative";
+            document.execCommand("insertHTML", true, imageHTML.outerHTML);
         }
 
         break;
@@ -663,48 +674,74 @@ export class EditorService {
         window.getSelection()?.removeAllRanges();
         window.getSelection()?.addRange(this._pageSelectionRange);
 
-        let personalInfoElement:HTMLElement                   = document.createElement("block"),
-            personalInfoBlocksContainer:HTMLDivElement        = document.createElement("div"),
-            personalInfoBlockCaptionContainer:HTMLDivElement  = document.createElement("div"),
-            spanCurlyBraceElement:HTMLSpanElement             = document.createElement("span"),
-            spanCaptionElement:HTMLSpanElement                = document.createElement("span");
+        let personalInfoBlock:HTMLElement     = document.createElement("personal-information"),
+            numberOfPersons:Number            = Object.keys(data.htmlBlocks).length,
+            inline:boolean                    = data.inline,
+            olElement:HTMLOListElement,
+            liElement:HTMLLIElement;
 
-        personalInfoElement.classList.add("grid", "c-3", "cg-8");
-        personalInfoBlocksContainer.classList.add("grid", "c-1", "cs-2", "rg-2");
-        personalInfoElement.append(personalInfoBlocksContainer);
-
-        if(0 < data.blockCaption.toString().trim().length){
-          personalInfoBlockCaptionContainer.classList.add("brace-right");
-          spanCurlyBraceElement.classList.add("curly");
-          personalInfoBlockCaptionContainer.append(spanCurlyBraceElement);
-
-          let captionWrapper:HTMLDivElement = document.createElement("div");
-          captionWrapper.classList.add("grid", "c-1", "v-ac");
-          captionWrapper.style.height = "100%"
-          captionWrapper.append(data.blockCaption.toString().trim());
-
-          spanCaptionElement.append(captionWrapper);
-          personalInfoBlockCaptionContainer.append(spanCaptionElement);
-          personalInfoElement.append(personalInfoBlockCaptionContainer);
+        if(1 < numberOfPersons) {
+          olElement = document.createElement("ol");
+          personalInfoBlock.appendChild(olElement);
         }
 
-        for(const block of data.blocks) {
-          let blockContainer:HTMLDivElement = document.createElement("div");
-          blockContainer.innerHTML = (block as string).replace(/\n/g, "<br/>");
-          personalInfoBlocksContainer.append(blockContainer);
+        for(let i = 0; i < numberOfPersons; i++) {
+          if(1 < numberOfPersons) {
+            liElement = document.createElement("li");
+
+            if(inline) {
+              liElement.style.display = "inline";
+              liElement.append((i + 1).toString() + ". ");
+            }
+
+            liElement.appendChild(data.htmlBlocks[i]);
+            olElement!.appendChild(liElement);
+          } else {
+            personalInfoBlock.appendChild(data.htmlBlocks[i]);
+          }
         }
 
-        document.execCommand("insertHTML", true, personalInfoElement.outerHTML);
+        if(!inline){
+          let container         = document.createElement("personal-information-container"),
+              captionContainer  = document.createElement("div"),
+              curlyElement      = document.createElement("span"),
+              captionElement    = document.createElement("div");
+
+          curlyElement.classList.add("curly");
+
+          captionElement.style.height = "100%";
+          captionElement.classList.add("grid", "c-1", "v-ac", "h-ac");
+          captionElement.append(data.blockCaption);
+          
+          captionContainer.style.height = "100%";
+          captionContainer.classList.add("brace-right");
+          captionContainer.append(curlyElement);
+          captionContainer.append(captionElement);
+  
+          container.classList.add("grid", "c-3", "cg-4", "v-ac");
+          personalInfoBlock.classList.add("cs-2")
+          container.append(personalInfoBlock);
+          container.append(captionContainer);
+
+          personalInfoBlock = container;
+        }
+
+        let toltalPersonalInfoElementsCount = document.getElementsByTagName(personalInfoBlock.tagName).length;
+        personalInfoBlock.id = personalInfoBlock.tagName.toLowerCase() + "-" + (!!toltalPersonalInfoElementsCount ? toltalPersonalInfoElementsCount : 0);
+
+        document.execCommand("insertHTML", true, personalInfoBlock.outerHTML + "</br></br>");
+
+        if(data.showSignatureTable) {
+          data.signatureTable.setAttribute('for', personalInfoBlock.id);
+          document.execCommand("insertHTML", true, data.signatureTable.outerHTML + "</br></br>");
+        }
         break;
     }
 
     if(!!selectedElement?.focus)
       selectedElement?.focus();
 
-    let pageHeight = PageOrientation.PORTRAIT == (Tool.tools[ToolCommand.PAGE_ORIENTATION] as SelectTool).selected 
-                      ? JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[1]
-                        : JSON.parse((Tool.tools[ToolCommand.PAGE_SIZE] as SelectTool).selected)[0];
-    setTimeout(()=> this.updatePagesView(0, pageHeight), 1);
+    this._pageViewUpdateSubject.next();
   }
 
   updateToolView():void{
@@ -712,28 +749,60 @@ export class EditorService {
     let parentElement         = this._pageSelectionRange?.commonAncestorContainer.parentElement,
     transmuteTools            = new Array<any>(Object.keys(ToolCommand).length/2).fill(false);
 
-    if(!parentElement || parentElement!.classList.contains("content"))
-      return;
+    if(!parentElement || parentElement!.classList.contains("body")) return;
 
-    while(!["body", "header-body", "footer-body"].some((r)=> parentElement?.classList.contains(r))){
-        switch(true){
-          case "B" == parentElement?.tagName:
+    while(!parentElement.classList.contains("body")){
+        if("B" == parentElement.tagName)
             transmuteTools[ToolCommand.BOLD]    = true;
-            break;
-          case "I" == parentElement?.tagName:
-            transmuteTools[ToolCommand.ITALIC]  = true;
-            break;
-          case "U" == parentElement?.tagName || !!parentElement?.style.textDecorationStyle:
-          transmuteTools[ToolCommand.UNDERLINE] = parentElement?.style.textDecorationStyle;
-          break;
-        }
 
-        parentElement = parentElement!.parentElement;
+        if("I" == parentElement.tagName)
+            transmuteTools[ToolCommand.ITALIC]  = true;
+
+        if("U" == parentElement.tagName || !!parentElement.style.textDecorationStyle)
+            transmuteTools[ToolCommand.UNDERLINE] = parentElement.style.textDecorationStyle;
+
+        if("FONT" == parentElement.tagName || !!(parentElement as any).color)
+          transmuteTools[ToolCommand.FORECOLOR] = (parentElement as any).color.toString().toUpperCase();
+
+        if(!!(parentElement as any).style.backgroundColor)
+          transmuteTools[ToolCommand.HIGHLIGHT] = this.rgba2hex((parentElement as any).style.backgroundColor).slice(0, 7).toUpperCase();
+
+        transmuteTools[ToolCommand.JUSTIFY] = Tool.tools[ToolCommand.JUSTIFY_LEFT];
+
+        if("center" == parentElement.style.textAlign)
+          transmuteTools[ToolCommand.JUSTIFY] = Tool.tools[ToolCommand.JUSTIFY_CENTER];
+
+        if("right" == parentElement.style.textAlign)
+          transmuteTools[ToolCommand.JUSTIFY] = Tool.tools[ToolCommand.JUSTIFY_RIGHT];
+
+        if("justify" == parentElement.style.textAlign)
+          transmuteTools[ToolCommand.JUSTIFY] = Tool.tools[ToolCommand.JUSTIFY_ALL];
+
+        if(!parentElement.parentElement) break;
+
+        parentElement = parentElement.parentElement;
     }
 
     transmuteTools.map((value, key)=>{
       Tool.transmuteTools[key]?.updateView(value);
     });
+  }
+
+  rgba2hex(rbga:string) {
+    let a:any,
+        rgb:any = rbga.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
+        alpha   = (rgb && rgb[4] || "").trim(),
+        hex     = rgb 
+                    ? (rgb[1] | 1 << 8).toString(16).slice(1) +
+                      (rgb[2] | 1 << 8).toString(16).slice(1) +
+                      (rgb[3] | 1 << 8).toString(16).slice(1) : rbga;
+  
+    a = (alpha !== "") ? alpha : 1;
+    // multiply before convert to HEX
+    a = ((a * 255) | 1 << 8).toString(16).slice(1)
+    hex = "#" + hex + a;
+
+    return hex;
   }
 
   addPageRequest(newPageBodyContents:Page):void{
@@ -838,7 +907,7 @@ export class EditorService {
     for(let pageIndex=activePageIndex; pageIndex<allPageBodyElements.length; pageIndex++){
       let pageBodyElement:HTMLElement  = allPageBodyElements[pageIndex];
 
-      if(isCursorReachedPageEnd && !!removableLastChildBuffer.length)
+      // if(isCursorReachedPageEnd && !!removableLastChildBuffer.length)
 
       while(!!removableLastChildBuffer.length)
         pageBodyElement.prepend(removableLastChildBuffer.shift());
@@ -934,5 +1003,9 @@ export class EditorService {
 
   onPageChange():Observable<HTMLDivElement>{
     return this._pageChangeSubject.asObservable();
+  }
+
+  onPageViewUpdate():Observable<void>{
+    return this._pageViewUpdateSubject.asObservable();
   }
 }

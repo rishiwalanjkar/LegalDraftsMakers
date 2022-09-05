@@ -27,7 +27,7 @@ import { UploadFontsComponent } from './upload-fonts/upload-fonts.component';
 import { CreateDraftTemplateComponent } from './create-draft-template/create-draft-template.component';
 
 import { EditorModule } from './editor/editor.module';
-import { SharedModule } from './shared/shared.module'
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -43,7 +43,7 @@ import { SharedModule } from './shared/shared.module'
     ExtractEmailDocumentsComponent,
     ExtractWhatsappDocumentsComponent,
     UploadFontsComponent,
-    CreateDraftTemplateComponent
+    CreateDraftTemplateComponent,
   ],
   imports: [
     BrowserModule,

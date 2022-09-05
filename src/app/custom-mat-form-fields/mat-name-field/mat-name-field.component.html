@@ -1,0 +1,6 @@
+<div [formGroup]="parts" class="grid c-8">
+    <mat-select formControlName="titleList">
+        <mat-option *ngFor="let keywordId of value.titleKeywordIds;"  [value]="languageService.fetchKeyWord(keywordId, language)">{{languageService.fetchKeyWord(keywordId, language)}}</mat-option>
+    </mat-select>
+    <custom-mat-divided-input class="cs-7" formControlName="name" [font]="font" [language]="language" [required]="required"></custom-mat-divided-input>
+</div>

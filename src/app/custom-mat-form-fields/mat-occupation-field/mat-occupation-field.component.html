@@ -1,0 +1,5 @@
+<div [formGroup]="parts">
+    <mat-select formControlName="list">
+        <mat-option *ngFor="let occupation of occupationService.fetchOccupationList()" [value]="occupation">{{languageService.fetchKeyWord(occupation.keyWordId, language)}}</mat-option>
+    </mat-select>
+</div>

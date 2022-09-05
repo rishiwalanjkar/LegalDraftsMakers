@@ -1,0 +1,39 @@
+<div class="container grid c-4 h-ac">
+    <div class="cs-3">
+        <svg *ngIf="value.isPassportPhoto()" [style.width]="value.width" style="position:absolute; border:none; z-index:2;" fill="rgba(0, 0, 0, 0.5)" stoke="none" [innerHTML]="getPassPortPhotoMask()|safeHtml">
+        </svg>
+        <div class="image" [style.width]="value.width" [style.height]="value.height" style="border: 1px solid currentColor; border-radius: 0px; background-size: 100% 100%; background-repeat: no-repeat; background-position: 50% 50%;" #previewPhoto></div>
+    </div>
+    <div class="grid c-1 v-ac">
+        <div class="grid c-3 g-1 h-ac v-ac">
+            <button mat-mini-fab color="warn" [style.margin.px]="5" (click)="zoom(previewPhoto, imageControl.ZOOM_IN)">
+                <mat-icon>zoom_in</mat-icon>
+            </button>
+            <button mat-mini-fab (click)="move(previewPhoto, imageControl.MOVE_TOP)">
+                <mat-icon>arrow_drop_up</mat-icon>
+            </button>
+            <button mat-mini-fab color="warn" [style.margin.px]="5" (click)="zoom(previewPhoto, imageControl.ZOOM_OUT)">
+                <mat-icon>zoom_out</mat-icon>
+            </button>
+    
+            <button mat-mini-fab (click)="move(previewPhoto, imageControl.MOVE_LEFT)">
+                <mat-icon>arrow_left</mat-icon>
+            </button>
+            <div>
+                <button color="primary" mat-mini-fab [style.margin.px]="5" (click)="file.click()">
+                    <mat-icon>upload</mat-icon>
+                </button>
+                <input type="file" (change)="upload($event, previewPhoto)" #file [hidden]="true"/>
+            </div>
+            <button mat-mini-fab (click)="move(previewPhoto, imageControl.MOVE_RIGHT)">
+                <mat-icon>arrow_right</mat-icon>
+            </button>
+    
+            <span></span>
+            <button mat-mini-fab (click)="move(previewPhoto, imageControl.MOVE_BOTTOM)">
+                <mat-icon>arrow_drop_down</mat-icon>
+            </button>
+            <span></span>
+        </div>
+    </div>
+</div>

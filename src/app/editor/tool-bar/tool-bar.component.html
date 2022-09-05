@@ -18,6 +18,7 @@
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.BOLD)" [color]="color" [button]="bold"></app-button-tool>
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.ITALIC)" [color]="color" [button]="italic"></app-button-tool>
                     <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.UNDERLINE)" [color]="color" [button]="underline"></app-button-with-select-tool>
+                    <app-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.LINE_SPACING)" [color]="color" [selectTool]="lineSpacing"></app-select-tool>
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SUPERSCRIPT)" [color]="color" [button]="superscript"></app-button-tool>
                     <app-button-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.SUBSCRIPT)" [color]="color" [button]="subscript"></app-button-tool>
                     <app-button-with-select-tool *ngIf="config?.isToolConfigured(toolGroup.HOME, homeToolGroup.CHANGE_CASE)" [color]="color" [button]="changeCase"></app-button-with-select-tool>
@@ -110,34 +111,30 @@
 </ng-template>
 
 <ng-template let-data="data" #tableTmpl>
-    <mat-checkbox [color]="color" [(ngModel)]="data.hasHeader">Header</mat-checkbox>
-    <br/>
-    <mat-checkbox [color]="color" [(ngModel)]="data.hasAutoSerialize">Auto Serialize</mat-checkbox>
-    <br/><br/>
-    <mat-grid-list cols="2" [rowHeight]="data.panelHeight(data.columns)" class="insert-table-dialog">
-        <mat-grid-tile>
-            <mat-form-field appearance="fill" [color]="color">
-                <mat-label>Rows</mat-label>
-                <input matInput [min]="data.minRows" [(ngModel)]="data.rows" type="number"/>
+    <div class="grid c-2 cg-2 rg-1">
+        <mat-checkbox [color]="color" [(ngModel)]="data.hasHeader">Header</mat-checkbox>
+        <mat-checkbox [color]="color" [(ngModel)]="data.hasAutoSerialize">Auto Serialize</mat-checkbox>
+
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Rows</mat-label>
+            <input matInput [min]="data.minRows" [(ngModel)]="data.rows" type="number"/>
+        </mat-form-field>
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Row Height</mat-label>
+            <input matInput [min]="data.minRowHeight" [(ngModel)]="data.rowHeight" type="number"/>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" [color]="color">
+            <mat-label>Columns</mat-label>
+            <input matInput [min]="data.minColumns" [(ngModel)]="data.columns" type="number"/>
+        </mat-form-field>
+        <div *ngIf="data.hasHeader">
+            <mat-form-field appearance="fill" [color]="color" *ngFor="let header of data.headers(data.columns); let headerNumber = index; let first = first;">
+                <mat-label>Header {{headerNumber + 1}}</mat-label>
+                <input required="required" matInput [(ngModel)]="data.headerLabels[headerNumber]" type="text" [disabled]="data.hasAutoSerialize && first" (keydown)="fontService.convertChar($event, tableHeader, selectedFont)" #tableHeader/>
             </mat-form-field>
-            <mat-form-field appearance="fill" [color]="color">
-                <mat-label>Row Height</mat-label>
-                <input matInput [min]="data.minRowHeight" [(ngModel)]="data.rowHeight" type="number"/>
-            </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile>
-            <mat-form-field appearance="fill" [color]="color">
-                <mat-label>Columns</mat-label>
-                <input matInput [min]="data.minColumns" [(ngModel)]="data.columns" type="number"/>
-            </mat-form-field>
-            <ng-container *ngIf="data.hasHeader">
-                <mat-form-field appearance="fill" [color]="color" *ngFor="let header of data.headers(data.columns); let headerNumber = index;">
-                    <mat-label>Header {{headerNumber + 1}}</mat-label>
-                    <input required="required" matInput [(ngModel)]="data.headerLabels[headerNumber]" type="text"/>
-                </mat-form-field>
-            </ng-container>
-        </mat-grid-tile>
-    </mat-grid-list>
+        </div>
+    </div>
 </ng-template>
 
 <ng-template let-data="data" #splitTableCellTmpl>
@@ -192,88 +189,26 @@
 </ng-template>
 
 <ng-template let-data="data" let-events="events" #imageTmpl>
-    <mat-grid-list cols="2" rowHeight="800px">
-        <mat-grid-tile>
-            <mat-card [style.width]="data.width()" [style.height]="data.height()" style="padding: 0px;">
-                <mat-card-content style="width:100%; height:100%; margin: 0px; padding:0px;">
-                    <svg *ngIf="data.isShowMask()" style="position:absolute; width:100%; border:none; z-index:2;" fill="rgba(0, 0, 0, 0.5)" stoke="none" [innerHTML]="data.getPassPortPhotoMask()|SafeHtml">
-                    </svg>
-                    <div [style.width]="data.width()" [style.height]="data.height()" style="position:absolute; border: 1px solid currentColor; border-radius: 0px;  background-size: 100% 100%; background-repeat: no-repeat; background-position: 50% 50%;" #previewPhoto></div>
-                </mat-card-content>
-                <mat-card-actions>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; justify-items: center;">
-                        <div>
-                            <button mat-mini-fab [style.margin.px]="5" (click)="events.zoom(previewPhoto, imageControl.ZOOM_IN, image)">
-                                <mat-icon>zoom_in</mat-icon>
-                            </button>
-                        </div>
-                        <div>
-                            <button mat-mini-fab [style.margin.px]="5" (click)="file.click()">
-                                <mat-icon>upload</mat-icon>
-                            </button>
-                            <input type="file" (change)="events.upload($event, previewPhoto, image)" #file style="display:none;"/>
-                        </div>
-                        <div>
-                            <button mat-mini-fab [style.margin.px]="5" (click)="events.zoom(previewPhoto, imageControl.ZOOM_OUT, image)">
-                                <mat-icon>zoom_out</mat-icon>
-                            </button>
-                        </div>
-                    </div>
-                </mat-card-actions>
-            </mat-card>
-        </mat-grid-tile>
-        <mat-grid-tile>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; column-gap:40px">
-                <div style="display:grid; grid-template-columns: auto auto auto; justify-content: center;">
-                    <div></div>
-                    <div>
-                        <button  mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_TOP, image)">
-                            <mat-icon>arrow_drop_up</mat-icon>
-                        </button>
-                    </div>
-                    <div></div>
-                    <div>
-                        <button mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_LEFT, image)">
-                            <mat-icon>arrow_left</mat-icon>
-                        </button>
-                    </div>
-                    <div></div>
-                    <div>
-                        <button mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_RIGHT, image)">
-                            <mat-icon>arrow_right</mat-icon>
-                        </button>
-                    </div>
-                    <div></div>
-                    <div>
-                        <button mat-mini-fab (click)="events.move(previewPhoto, imageControl.MOVE_BOTTOM, image)">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </button>
-                    </div>
-                    <div></div>
-                </div>
-                <div style="display:grid; grid-template-columns: auto; grid-gap: 20px; justify-content: center;">
-                    <mat-radio-group [(ngModel)]="data.displayType" color="primary">
-                        <div style="display:grid; grid-template-columns: auto auto;grid-gap: 20px; align-items: center;">
-                            <mat-radio-button *ngFor="let displayType of data.getAllDisplayTypes()" [value]="displayType">{{displayType}}</mat-radio-button>
-                        </div>
-                    </mat-radio-group>
-    
-                    <mat-form-field appearance="fill" [color]="color"  *ngIf="imageDisplayType.BACKGROUNG == data.displayType">
-                        <mat-label>Page number</mat-label>
-                        <input min="1" [max]="data.maxPageNumber()" matInput [(ngModel)]="data.pageNumber" type="number"/>
-                    </mat-form-field>
-                    
-    
-                    <mat-form-field appearance="fill" [color]="color" *ngIf="imageDisplayType.BLOCK == data.displayType">
-                        <mat-label>Image Size</mat-label>
-                        <mat-select [(value)]="data.selectedImageSize">
-                            <mat-option *ngFor="let size of data.getImageSizes()" [value]="size.size">{{size.label}}</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-            </div>
-        </mat-grid-tile>
-    </mat-grid-list>
+    <div [formGroup]="data.form" class="grid c-4 cg-2">
+        <mat-form-field appearance="fill" class="cs-3">
+            <mat-label>Upload Image</mat-label>
+            <custom-mat-image-upload-field formControlName="imageUploadControl"></custom-mat-image-upload-field>
+        </mat-form-field>
+
+        <div>
+            <mat-form-field appearance="fill" [color]="color">
+                <mat-label>Image Type</mat-label>
+                <mat-select formControlName="selectedImageTypeControl">
+                    <mat-option *ngFor="let type of data.getImageTypes()" [value]="type">{{type}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" [color]="color" *ngIf="data.isShowPageNumberControl()">
+                <mat-label>Page number</mat-label>
+                <input min="1" [max]="data.maxPageNumber()" matInput formControlName="pageNumberControl" type="number"/>
+            </mat-form-field>
+        </div>
+    </div>
 </ng-template>
 
 <ng-template let-data="data" let-events="events" #symbolTmpl>
@@ -376,29 +311,67 @@
             <mat-label>Number of Blocks</mat-label>
             <input [(ngModel)]="data.blockCount" min="1" type="number" matInput/>
         </mat-form-field>
-        <div class="grid c-2 cg-8">
-            <div class="grid c-1 rg-3">
-                <div class="grid c-1 rg-2" *ngFor="let block of data.getDummyBlocks(); let i = index;">
-                    <mat-form-field appearance="fill">
-                        <mat-label>{{data.getIndividualBlockLabel(i)}}</mat-label>
-                        <input matInput [(ngModel)]="data.blocks[i].name" (keydown)="_fontService.convertChar($event, blockName)" #blockName/>
-                    </mat-form-field>
-                    <div class="grid c-2 cg-2">
-                        <app-mat-age-field [value]="data.defaultBirthDate" appearance="fill"></app-mat-age-field>
-                        <app-mat-age-field [value]="data.defaultBirthDate"></app-mat-age-field>
-                    </div>
-                    <app-mat-age-field [value]="data.defaultBirthDate"></app-mat-age-field>
+        <div class="grid c-5 cg-1">
+            <mat-checkbox [color]="color" [(ngModel)]="data.showFatherOrHusbandNameField">{{languageService.fetchKeyWord(24, config.draftLanguage)}}</mat-checkbox>
+            <mat-checkbox [color]="color" [(ngModel)]="data.showMobileNumberField">{{languageService.fetchKeyWord(37, config.draftLanguage)}}</mat-checkbox>
+            <mat-checkbox [color]="color" [(ngModel)]="data.showAdharNumberField">{{languageService.fetchKeyWord(38, config.draftLanguage)}}</mat-checkbox>
+            <mat-checkbox [color]="color" [(ngModel)]="data.showPanNumberField">{{languageService.fetchKeyWord(39, config.draftLanguage)}}</mat-checkbox>
+            <mat-checkbox [color]="color" [(ngModel)]="data.showSignatureTable">{{languageService.fetchKeyWord(34, config.draftLanguage)}}</mat-checkbox>
+        </div>
+        <div class="grid cg-8" [ngClass]="data.inline ? 'c-2' : 'c-3'">
+            <div class="grid c-1 rg-3 cs-2">
+                <div class="grid c-1 rg-2" *ngFor="let block of data.getBlocks(); let i = index;">
+                    <app-personal-info-block 
+                        [showFatherOrHusbandNameField]="data.showFatherOrHusbandNameField"
+                        [showMobileNumberField]="data.showMobileNumberField"
+                        [showAdharNumberField]="data.showAdharNumberField"
+                        [showPanNumberField]="data.showPanNumberField"
+                        [showPassportPhoto]="data.showSignatureTable"
+                        [required]="true" 
+                        (htmlChange)="data.setHtml(i, $event)" 
+                        (nameChange)="data.setName(i, $event)" 
+                        (addressChange)="data.setAddress(i, $event)" 
+                        (passportPhotoChange)="data.setPassportPhoto(i, $event)" 
+                        [(inline)]="data.inline" 
+                        [label]="data.getBlockLabel(i)" 
+                        [font]="selectedFont" 
+                        [language]="config.draftLanguage" 
+                        appearance="fill"
+                    ></app-personal-info-block>
                 </div>
             </div>
-            <div class="brace-right">
+            <div class="brace-right" *ngIf="!data.inline">
                 <span class="curly"></span>
                 <div class="grid c-1 v-ac" style="height: 100%;">
                     <mat-form-field appearance="fill">
                         <mat-label>Block Group Caption</mat-label>
-                        <input matInput [(ngModel)]="data.blockCaption" (keydown)="_fontService.convertChar($event, blockCaption)" #blockCaption/>
+                        <input matInput [(ngModel)]="data.blockCaption" (keydown)="fontService.convertChar($event, blockCaption, selectedFont)" #blockCaption/>
                     </mat-form-field>
                 </div>
             </div>
         </div>
+        <table *ngIf="data.showSignatureTable" (ngModel)="data.setSignatureTable(signatureTable)" class="border auto-serialize center-header" #signatureTable>
+            <thead>
+                <tr *ngIf="!data.inline">
+                    <th colspan="5">{{data.blockCaption}}</th>
+                </tr>
+                <tr>
+                    <th>{{languageService.fetchKeyWord(60, config.draftLanguage)}}</th>
+                    <th>{{languageService.fetchKeyWord(61, config.draftLanguage)}}</th>
+                    <th>{{languageService.fetchKeyWord(62, config.draftLanguage)}}</th>
+                    <th>{{languageService.fetchKeyWord(63, config.draftLanguage)}}</th>
+                    <th>{{languageService.fetchKeyWord(64, config.draftLanguage)}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let block of data.getBlocks(signatureTable);let i = index;">
+                    <td></td>
+                    <td>{{data.names[i]}}</td>
+                    <td>{{data.addresses[i]}}</td>
+                    <td [innerHTML]="!data.passportPhotos[i] ? '' :data.passportPhotos[i]|safeHtml"></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </ng-template>

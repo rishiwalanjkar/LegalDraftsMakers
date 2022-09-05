@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { EditorService } from './editor.service';
-import { Font, FontLanguage, SelectOption, SelectTool, Tool, ToolCommand } from './tool-bar/tools/tool-bar';
+import { SelectOption } from '../editor/tool-bar/tools/tool-bar';
 
 const KEY_BOARD_CHARACTERS  = ["`", "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "q", "w", "e", 
                                 "r", "t", "y", "u", "i", "o", "p", "[", "]", "\\", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "z", "x", "c", "v", "b", "n", "m", 
@@ -8,6 +7,18 @@ const KEY_BOARD_CHARACTERS  = ["`", "~", "!", "@", "#", "$", "%", "^", "&", "*",
                                 "C", "V", "B", "N", "M", "<", ">", "?"
                               ];
 
+export enum FontLanguage{
+  ENGLISH,
+  DEVNAGARI
+}
+
+export interface Font{
+  fontName:string;
+  fontFamily:string;
+  isConvert:boolean;
+  language:FontLanguage
+  keyMappings?:object;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +31,8 @@ export class FontService {
   constructor() { }
 
   convertSelection(data:any, selectionRange:Range):void{
+    if(!data || !selectionRange) return;
+
     let fontFamily:string           = data.fontFamily,
         isConvert:boolean           = !!data.isConvert,
         keyMappings:any             = data.keyMappings,
@@ -53,11 +66,9 @@ export class FontService {
         (window.getSelection() as Selection).addRange(range);
   }
 
-  convertChar(event:KeyboardEvent, data:Range|HTMLInputElement|HTMLTextAreaElement):void {
+  convertChar(event:KeyboardEvent, data:Range|HTMLInputElement|HTMLTextAreaElement, selectedFont:Font):void {
 
     if(1 < event.key.length || !this.keyBoardCharacters.includes(event.key)) return;
-
-    let selectedFont:Font  = (Tool.tools[ToolCommand.SET_FONT] as SelectTool).selected;
 
     if(FontLanguage.ENGLISH == selectedFont.language) return;
 
@@ -99,7 +110,9 @@ export class FontService {
   
     } else{
       data.value += transformedChar;
-
+      data.dispatchEvent(new InputEvent("change"));
+      data.dispatchEvent(new InputEvent("input"));
+      
       if("ा" != transformedChar || !data.value) return;
 
       switch(true){
@@ -111,6 +124,8 @@ export class FontService {
           data.value  = data.value.substring(0, data.value.length - 2) + "आ";
           break;
       }
+
+      
     }
   }
   
@@ -130,16 +145,16 @@ export class FontService {
                               language      : FontLanguage.DEVNAGARI,
                               keyMappings   : {
                                                 "`": "्र",
-                                                "1":"१",
-                                                "2":"२",
-                                                "3":"३",
-                                                "4":"४",
-                                                "5":"५",
-                                                "6":"६",
-                                                "7":"७",
-                                                "8":"८",
-                                                "9":"९",
-                                                "0":"१०",
+                                                // "1":"१",
+                                                // "2":"२",
+                                                // "3":"३",
+                                                // "4":"४",
+                                                // "5":"५",
+                                                // "6":"६",
+                                                // "7":"७",
+                                                // "8":"८",
+                                                // "9":"९",
+                                                // "0":"०",
                                                 "-":"र्",
                                                 "=":"ड़",
                                                 "~":"त्र",

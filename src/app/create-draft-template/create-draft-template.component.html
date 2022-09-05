@@ -10,112 +10,230 @@
                         <mat-tab-group [(selectedIndex)]="selectedTabIndex">
                             <mat-tab label="Label">
                                 <div class="tab-contents">
-                                    <mat-radio-group class="grid c-6" [color]="widgetColor" [(ngModel)]="tabData[tab.LABEL]">
-                                        <mat-radio-button [value]="plainInputField">{{plainInputField.inputFieldFormat}} Text Box</mat-radio-button>
-                                        <mat-radio-button [value]="dividedInputField">{{dividedInputField.inputFieldFormat}} Text Box</mat-radio-button>
-                                    </mat-radio-group>
+
                                     <mat-form-field [color]="widgetColor" appearance="fill">
                                         <mat-label>Label / Question</mat-label>
-                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.LABEL].label" [required]="true" #labelInput (keydown)="_fontService.convertChar($event, labelInput)">
+                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.LABEL].instance.label" [required]="true" #fileLabelInput (keydown)="fontService.convertChar($event, fileLabelInput, selectedFont)">
                                     </mat-form-field>
-                                    <div *ngIf="tabData[tab.LABEL].isShowPartsAndSeparator()" class="grid c-4 g-1">
-                                        <mat-form-field [color]="widgetColor" appearance="fill">
-                                            <mat-label>Parts</mat-label>
-                                            <input matInput type="number" min="2" max="5" [required]="true" [(ngModel)]="tabData[tab.LABEL].parts">
-                                        </mat-form-field>
-                                        <mat-form-field [color]="widgetColor" appearance="fill">
-                                            <mat-label>Separator Character</mat-label>
-                                            <input matInput type="text" [required]="true" [(ngModel)]="tabData[tab.LABEL].separator" #specialCharInput (keydown)="_fontService.convertChar($event, specialCharInput)">
-                                        </mat-form-field>
-                                    </div>
-                                    <div class="grid c-4 g-1" *ngFor="let inputFieldConfig of tabData[tab.LABEL].getInputFieldConfigs(); let i = index">
-                                        <mat-form-field [color]="widgetColor" appearance="fill">
-                                            <mat-label>Type of Text / Answer {{inputFieldConfig.label}}</mat-label>
-                                            <mat-select [(ngModel)]="inputFieldConfig.type">
-                                                <mat-option *ngFor="let type of inputFieldConfig.getAllTypes()" [value]="type">{{type}}</mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                        <mat-form-field [color]="widgetColor" appearance="fill">
-                                            <mat-label>Max Length of Text / Answer {{inputFieldConfig.label}}</mat-label>
-                                            <input matInput type="number" min="1" [(ngModel)]="inputFieldConfig.maxLength" [required]="true">
-                                        </mat-form-field>
-                                    </div>
+
+                                    <fieldset>
+                                        <legend>
+                                            <mat-radio-group [color]="widgetColor" [(ngModel)]="tabData[tab.LABEL].instance">
+                                                <mat-radio-button *ngFor="let fieldformat of tabData[tab.LABEL].instance.getSupportedFieldFormats()" [value]="fieldformat.value">{{fieldformat.caption}}</mat-radio-button>
+                                            </mat-radio-group>
+                                        </legend>
+
+                                        <div *ngIf="tabData[tab.LABEL].instance.isDividedInput()" class="grid c-4 g-1">
+                                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                                <mat-label>Parts</mat-label>
+                                                <input matInput type="number" min="2" max="5" [required]="true" [(ngModel)]="$any(tabData[tab.LABEL]).instance.parts">
+                                            </mat-form-field>
+                                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                                <mat-label>Separator Character</mat-label>
+                                                <input matInput type="text" [required]="true" [(ngModel)]="$any(tabData[tab.LABEL]).instance.separator" #specialCharInput (keydown)="fontService.convertChar($event, specialCharInput, selectedFont)">
+                                            </mat-form-field>
+                                        </div>
+
+                                        <div class="grid c-4 g-1" *ngFor="let inputFieldConfig of tabData[tab.LABEL].instance.getInputFieldConfigs(); let i = index">
+                                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                                <mat-label>Type of Text / Answer {{inputFieldConfig.label}}</mat-label>
+                                                <mat-select [(ngModel)]="inputFieldConfig.type">
+                                                    <mat-option *ngFor="let type of inputFieldConfig.getAllTypes()" [value]="type">{{type}}</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                                <mat-label>Max Length of Text / Answer {{inputFieldConfig.label}}</mat-label>
+                                                <input matInput type="number" min="1" [(ngModel)]="inputFieldConfig.maxLength" [required]="true">
+                                            </mat-form-field>
+                                        </div>
+                                    </fieldset>
                                 </div>
                             </mat-tab>
                             <mat-tab label="Choice">
                                 <div class="tab-contents">
-                                    <mat-radio-group class="grid c-8" [color]="widgetColor" [(ngModel)]="tabData[tab.CHOICE].choiceFieldFormat">
-                                        <mat-radio-button *ngFor="let choiceFieldformat of tabData[tab.CHOICE].getAllChoiceFieldFormats()" [value]="choiceFieldformat">{{choiceFieldformat}}</mat-radio-button>
-                                    </mat-radio-group>
                                     <mat-form-field [color]="widgetColor" appearance="fill">
                                         <mat-label>Label / Question</mat-label>
-                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.CHOICE].label" [required]="true" #labelInput (keydown)="_fontService.convertChar($event, labelInput)">
+                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.CHOICE].instance.label" [required]="true" #choiceLabelInput (keydown)="fontService.convertChar($event, choiceLabelInput, selectedFont)">
                                     </mat-form-field>
-                                    <div class="grid c-4 g-1" *ngFor="let choiceFieldConfig of tabData[tab.CHOICE].getChoiceFieldConfigs(); let i = index">
-                                        <mat-form-field [color]="widgetColor" appearance="fill">
-                                            <mat-label>Option {{i+1}}</mat-label>
-                                            <input matInput type="text" [(ngModel)]="choiceFieldConfig.option" [required]="true" #optionInput (keydown)="_fontService.convertChar($event, optionInput)">
-                                        </mat-form-field>
-                                        <mat-form-field class="cs-3" [color]="widgetColor" appearance="fill">
-                                            <mat-label>Output {{i+1}}</mat-label>
-                                            <input matInput type="text" [(ngModel)]="choiceFieldConfig.output" [required]="true" #outputInput (keydown)="_fontService.convertChar($event, outputInput)">
-                                        </mat-form-field>
-                                    </div>
-                                    <div class="grid c-4 g-1">
-                                        <button mat-raised-button [color]="widgetColor" (click)="tabData[tab.CHOICE].addOption()">Add More Option</button>
-                                        <button mat-raised-button *ngIf="tabData[tab.CHOICE].isShowRemoveButton()" color="accent" (click)="tabData[tab.CHOICE].removeOption()">Remove Option</button>
-                                    </div>
+
+                                    <fieldset>
+                                        <legend>
+                                            <mat-radio-group [color]="widgetColor" [(ngModel)]="tabData[tab.CHOICE].instance">
+                                                <mat-radio-button *ngFor="let fieldformat of tabData[tab.CHOICE].instance.getSupportedFieldFormats()" [value]="fieldformat.value" [disabled]="disableDependent(fieldformat.value)">{{fieldformat.caption}}</mat-radio-button>
+                                            </mat-radio-group>
+                                        </legend>
+
+                                        <div class="grid c-4 g-1" *ngFor="let choiceFieldConfig of tabData[tab.CHOICE].instance.getChoiceFieldConfigs(); let i = index">
+                                            <mat-form-field [color]="widgetColor" appearance="fill">
+                                                <mat-label>Option {{i+1}}</mat-label>
+                                                <input matInput type="text" [(ngModel)]="choiceFieldConfig.option" [required]="true" #optionInput (keydown)="fontService.convertChar($event, optionInput, selectedFont)">
+                                            </mat-form-field>
+
+                                            <mat-form-field *ngIf="!tabData[tab.CHOICE].instance.isField(quickEditFieldFormat.DEPENDENT_FIELD)" class="cs-3" [color]="widgetColor" appearance="fill">
+                                                <mat-label>Output {{i+1}}</mat-label>
+                                                <textarea matInput type="text" rows="5" [(ngModel)]="choiceFieldConfig.output" [value]="choiceFieldConfig.option" [required]="true" #outputInput (keydown)="fontService.convertChar($event, outputInput, selectedFont)"></textarea>
+                                            </mat-form-field>
+
+                                            <div *ngIf="tabData[tab.CHOICE].instance.isField(quickEditFieldFormat.DEPENDENT_FIELD)" class="grid c-4 cg-1 cs-3">
+                                                <mat-form-field [color]="widgetColor" appearance="fill">
+                                                    <mat-label>Field Pool</mat-label>
+                                                    <mat-select [(ngModel)]="$any(choiceFieldConfig).dependeeField">
+                                                        <mat-option *ngFor="let field of getDependableFields();" [value]="field">{{field.label}}</mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+
+                                                <mat-form-field *ngIf="!!$any(choiceFieldConfig).dependeeField && !!$any(choiceFieldConfig).dependeeField.getComponentsAsArray().length" [color]="widgetColor" appearance="fill">
+                                                    <mat-label>Field Attribute</mat-label>
+                                                    <mat-select [(ngModel)]="$any(choiceFieldConfig).selectedComponent">
+                                                        <mat-option *ngFor="let component of $any(choiceFieldConfig).dependeeField.getComponentsAsArray();" [value]="component">{{component}}</mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+
+                                                <mat-form-field *ngIf="!!$any(choiceFieldConfig).dependeeField && !!$any(choiceFieldConfig).dependeeField.getDependableConditions($any(choiceFieldConfig).selectedComponent).length" [color]="widgetColor" appearance="fill">
+                                                    <mat-label>Conditions</mat-label>
+                                                    <mat-select [(ngModel)]="$any(choiceFieldConfig).selectedCondition">
+                                                        <mat-option *ngFor="let condition of $any(choiceFieldConfig).dependeeField.getDependableConditions($any(choiceFieldConfig).selectedComponent);" [value]="condition">{{condition}}</mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>
+
+                                                <mat-form-field *ngIf="!!$any(choiceFieldConfig).dependeeField" [color]="widgetColor" appearance="fill">
+                                                    <mat-label>Field Pool</mat-label>
+                                                    
+                                                    <mat-select *ngIf="!!$any(choiceFieldConfig).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent).length" [(ngModel)]="$any(choiceFieldConfig).comparabelValue">
+                                                        <mat-option *ngFor="let comparabelValue of $any(choiceFieldConfig).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent);" [value]="comparabelValue">{{comparabelValue}}</mat-option>
+                                                    </mat-select>
+
+                                                    <input matInput *ngIf="!$any(choiceFieldConfig).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent).length" [(ngModel)]="$any(choiceFieldConfig).comparabelValue">
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid c-4 g-1">
+                                            <button mat-raised-button [color]="widgetColor" (click)="tabData[tab.CHOICE].instance.addOption()">Add More Option</button>
+                                            <button mat-raised-button *ngIf="tabData[tab.CHOICE].instance.isShowRemoveButton()" color="accent" (click)="tabData[tab.CHOICE].instance.removeOption()">Remove Option</button>
+                                        </div>
+                                    </fieldset>
                                 </div>
                             </mat-tab>
                             <mat-tab label="Date">
                                 <div class="tab-contents">
-                                    <mat-radio-group class="grid g-2" [color]="widgetColor" [(ngModel)]="tabData[tab.DATE].dateFieldFormat">
-                                        <mat-radio-button *ngFor="let dateFieldFormat of tabData[tab.DATE].getAllDateFieldFormats()" [value]="dateFieldFormat">{{dateFieldFormat}}</mat-radio-button>
-                                    </mat-radio-group>
                                     <mat-form-field [color]="widgetColor" appearance="fill">
                                         <mat-label>Label / Question</mat-label>
-                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.DATE].label" [required]="true" #labelInput (keydown)="_fontService.convertChar($event, labelInput)">
+                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.DATE].instance.label" [required]="true" #dateLabelInput (keydown)="fontService.convertChar($event, dateLabelInput, selectedFont)">
                                     </mat-form-field>
+                                    <mat-radio-group class="grid c-6" [color]="widgetColor" [(ngModel)]="tabData[tab.DATE].instance">
+                                        <mat-radio-button *ngFor="let fieldformat of tabData[tab.DATE].instance.getSupportedFieldFormats()" [value]="fieldformat.value">{{fieldformat.caption}}</mat-radio-button>
+                                    </mat-radio-group>
                                 </div>
                             </mat-tab>
                             <mat-tab label="Photo">
                                 <div class="tab-contents">
-                                    <mat-radio-group class="grid g-2" [color]="widgetColor" [(ngModel)]="tabData[tab.PHOTO].photoFieldFormat">
-                                        <mat-radio-button *ngFor="let photoFieldFormat of tabData[tab.PHOTO].getAllPhotoFieldFormats()" [value]="photoFieldFormat">{{photoFieldFormat}}</mat-radio-button>
-                                    </mat-radio-group>
                                     <mat-form-field [color]="widgetColor" appearance="fill">
                                         <mat-label>Label / Question</mat-label>
-                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.PHOTO].label" [required]="true" #labelInput (keydown)="_fontService.convertChar($event, labelInput)">
+                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.PHOTO].instance.label" [required]="true" #photoLabelInput (keydown)="fontService.convertChar($event, photoLabelInput, selectedFont)">
                                     </mat-form-field>
+                                    <mat-radio-group class="grid c-6" [color]="widgetColor" [(ngModel)]="tabData[tab.PHOTO].instance">
+                                        <mat-radio-button *ngFor="let fieldformat of tabData[tab.PHOTO].instance.getSupportedFieldFormats()" [value]="fieldformat.value">{{fieldformat.caption}}</mat-radio-button>
+                                    </mat-radio-group>
                                 </div>
                             </mat-tab>
                             <mat-tab label="Block">
+                                <div class="tab-contents">
+                                    <mat-form-field [color]="widgetColor" appearance="fill">
+                                        <mat-label>Label / Question</mat-label>
+                                        <input matInput placeholder="Enter desired label / question here..." [(ngModel)]="tabData[tab.BLOCK].instance.label" [required]="true" #blockLabelInput (keydown)="fontService.convertChar($event, blockLabelInput, selectedFont)">
+                                    </mat-form-field>
 
+                                    <fieldset>
+                                        <legend>
+                                            <mat-radio-group [color]="widgetColor" [(ngModel)]="tabData[tab.BLOCK].instance">
+                                                <mat-radio-button *ngFor="let fieldformat of tabData[tab.BLOCK].instance.getSupportedFieldFormats()" [value]="fieldformat.value">{{fieldformat.caption}}</mat-radio-button>
+                                            </mat-radio-group>
+                                        </legend>
+
+                                        <div *ngIf="tabData[tab.BLOCK].instance.isField(quickEditFieldFormat.PERSONAL_INFORMATION_FIELD)" class="grid c-6 cg-2 h-al">
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).hasSignatureTable">Signature Table</mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).multiple">Multiple</mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).inline">Inline</mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).showMobileNumberField">Mobile Number</mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).showAdharNumberField">Adhar Number</mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).showPanNumberField">Pan Number</mat-checkbox>
+                                        </div>
+
+                                        <div *ngIf="tabData[tab.BLOCK].instance.isField(quickEditFieldFormat.PERSONAL_INFORMATION_FIELD) && $any(tabData[tab.BLOCK].instance).hasSignatureTable" class="grid c-3 cg-2 h-al v-ac">
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).signatureTableHasNameColumn">
+                                                <mat-form-field appearance="fill">
+                                                    <mat-label>Name Column Number</mat-label>
+                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).nameColumnNumbar" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasNameColumn" type="number">
+                                                </mat-form-field>
+                                            </mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).signatureTableHasAddressColumn">
+                                                <mat-form-field appearance="fill">
+                                                    <mat-label>Address Column Number</mat-label>
+                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).addressColumnNumbar" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasAddressColumn" type="number">
+                                                </mat-form-field>
+                                            </mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).signatureTableHasPhotoColumn">
+                                                <mat-form-field appearance="fill">
+                                                    <mat-label>Photo Column Number</mat-label>
+                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).photoColumnNumbar" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasPhotoColumn" type="number">
+                                                </mat-form-field>
+                                            </mat-checkbox>
+                                        </div>
+
+                                        <div *ngIf="tabData[tab.BLOCK].instance.isField(quickEditFieldFormat.TABLE_FIELD)" class="grid c-6">
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).autoSerializable">Auto Serializable</mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).header">Header</mat-checkbox>
+                                            
+                                            <table *ngIf="$any(tabData[tab.BLOCK].instance).header" class="border" [ngClass]="$any(tabData[tab.BLOCK].instance).autoSerializable ? 'auto-serialize' : ''">
+                                                <thead [innerHTML]="$any(tabData[tab.BLOCK].instance).tableHead|safeHtml"></thead>
+                                            </table>
+                                        </div>
+
+                                        <div *ngIf="tabData[tab.BLOCK].instance.isField(quickEditFieldFormat.ADDRESS_FIELD)" class="grid c-3">
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).bothCurrentAndPrevious">Both current and previous</mat-checkbox>
+                                        </div>
+
+                                    </fieldset>
+                                    <br/>
+                                </div>
                             </mat-tab>
                         </mat-tab-group>
                     </mat-card-content>
                     <mat-divider></mat-divider>
                     <mat-card-actions>
-                        <button mat-raised-button [color]="widgetColor" (click)="insert()">Ok</button>
+                        <button mat-raised-button color="accent" (click)="markNew()">Mark Selection</button>
+                        <button mat-raised-button [color]="widgetColor" (click)="insert()">Insert Field</button>
                     </mat-card-actions>
                 </mat-card>
             
-                <div class="grid c-1 rg-1" [innerHTML]="latestDraft.innerHTML|SafeHtml"></div>
+                <div class="grid c-1 rg-1" [innerHTML]="latestDraft.innerHTML|safeHtml"></div>
             </div>
 
             <mat-card>
                 <mat-card-content>
-                    <mat-radio-group [(ngModel)]="repeatField" class="grid c-4" [color]="widgetColor">
-                        <mat-radio-button *ngFor="let field of fieldPool; let first = first;" [checked]="first" [value]="field">{{field.label}}</mat-radio-button>
+                    <mat-radio-group [(ngModel)]="repeatField" class="grid c-1 rg-2" [color]="widgetColor">
+                        <ng-container *ngFor="let field of fieldPool; let first = first;">
+                            <mat-radio-button *ngIf="!field.getComponentsAsArray().length" [checked]="first" [value]="field">{{field.label}}</mat-radio-button>
+
+                            <fieldset *ngIf="!!field.getComponentsAsArray().length">
+                                <legend>
+                                    <mat-radio-button [checked]="first" [value]="field">{{field.label}}</mat-radio-button>
+                                </legend>
+    
+                                <div class="grid c-3 h-al">
+                                    <mat-checkbox *ngFor="let component of field.getComponentsAsArray(); let i = index;" [(ngModel)]="$any(field.components)[component]">{{component}}</mat-checkbox>
+                                </div>
+                            </fieldset>
+                        </ng-container>
                     </mat-radio-group>
                 </mat-card-content>
                 <mat-divider></mat-divider>
                 <mat-card-actions>
-                    <button mat-raised-button [color]="widgetColor" (click)="repeat()">Repeat</button>
+                    <button mat-raised-button color="accent" (click)="markRepeat()">Mark Selection</button>
+                        <button mat-raised-button [color]="widgetColor" (click)="repeat()">Repeat</button>
                 </mat-card-actions>
             </mat-card>
         </div>
     </mat-tab>
-</mat-tab-group>
-
-    
+</mat-tab-group>   

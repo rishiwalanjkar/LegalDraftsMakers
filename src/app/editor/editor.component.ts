@@ -1,12 +1,15 @@
 import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output} from '@angular/core';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { Font } from '../font/font.service';
+import { Language } from '../language/language.service';
 import { EditorService } from './editor.service';
 import { Page } from './page/page/page';
 import { PageComponent } from './page/page/page.component';
-import {  BlockToolGroup, DialogTool, FileToolGroup, Font, HomeToolGroup, LayoutToolGroup, TableToolGroup, Tool, ToolCommand, ToolGroup } from './tool-bar/tools/tool-bar';
+import {  BlockToolGroup, DialogTool, FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup, Tool, ToolCommand, ToolGroup } from './tool-bar/tools/tool-bar';
 
 export class EditorConfig{
+  draftLanguage = Language.MARATHI;
 
   constructor(private toolGroup:{[k:string]:any[]}  = {}){
     for(const group of Object.values(ToolGroup)) {
@@ -36,7 +39,7 @@ export class EditorConfig{
 })
 export class EditorComponent implements OnDestroy, AfterViewInit {
 
-  @Input() config?:EditorConfig;
+  @Input() config!:EditorConfig;
   @Output() draftChangeEvent = new EventEmitter<HTMLDivElement>();
   @Output() fontChangeEvent = new EventEmitter<Font>();
 
@@ -47,6 +50,7 @@ export class EditorComponent implements OnDestroy, AfterViewInit {
   private _onPageSizeChange!:Subscription;
   private _onPageMarginChange!:Subscription;
   private _onPageChange!:Subscription;
+  private _onPageViewUpdate!:Subscription;
   
   constructor(private _editorService:EditorService) {
     this.addPage();
@@ -66,8 +70,6 @@ export class EditorComponent implements OnDestroy, AfterViewInit {
       for(let formControl of this.pages.controls) {
         formControl.value.setSize(newPageSize);
       }
-
-      setTimeout(()=> this._editorService.updatePagesView(0, this.pageHeight) , 1);
     });
 
     this._onPageMarginChange = this._editorService.onPageMarginChange().subscribe((newPageMargin:any)=>{
@@ -79,13 +81,13 @@ export class EditorComponent implements OnDestroy, AfterViewInit {
         this.pages.controls[i-1].value.setRightPadding(newPageMargin.isPageMirror ? (!isOddPageNumber ? newPageMargin.leftPadding : newPageMargin.rightPadding) : newPageMargin.rightPadding);
         this.pages.controls[i-1].value.setFooterHeight(newPageMargin.bottomPadding);
       }
-
-      setTimeout(()=> this._editorService.updatePagesView(0, this.pageHeight) , 1);
     });
 
     this._onPageChange = this._editorService.onPageChange().subscribe((draftElement:HTMLDivElement)=>{
       this.draftChangeEvent.emit(draftElement);
     });
+
+    this._onPageViewUpdate = this._editorService.onPageViewUpdate().subscribe(()=> setTimeout(()=> this._editorService.updatePagesView(0, this.pageHeight) , 1));
   }
 
   addPage(page:Page = new Page()):void{
@@ -121,6 +123,8 @@ export class EditorComponent implements OnDestroy, AfterViewInit {
     this._onDeletePage.unsubscribe();
     this._onPageSizeChange.unsubscribe();
     this._onPageMarginChange.unsubscribe();
+    this._onPageChange.unsubscribe();
+    this._onPageViewUpdate.unsubscribe();
   }
 
   ngAfterViewInit(): void {

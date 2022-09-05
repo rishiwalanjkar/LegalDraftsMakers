@@ -1,66 +1,80 @@
 import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Component, ElementRef, HostBinding, HostListener, Input, OnInit, Optional, Self } from '@angular/core';
-import { ControlValueAccessor, FormBuilder, NgControl } from '@angular/forms';
-import { MatFormFieldAppearance, MatFormFieldControl } from '@angular/material/form-field';
+import { ControlValueAccessor, FormBuilder, FormControl, FormGroup, NgControl, Validators } from '@angular/forms';
+import { MatFormFieldControl } from '@angular/material/form-field';
 import { Subject } from 'rxjs';
 
 export class MatAgeField{
-  public birthDate:Date = new Date(1990, 1, 1)
-
-  constructor(birthDate?:Date){
-    if(!!birthDate)
-      this.birthDate = birthDate;
+  private _label!:string;
+  private _birthDate!:Date;
+  private _age:string       = "";
+  
+  set birthDate(date:string|Date){
+    this._birthDate = ( date instanceof Date )? date : new Date(parseInt(date.substring(6)), parseInt(date.substring(3, 4)), parseInt(date.substring(0, 1)));
   }
 
-  setDate(date:string|Date){
-    this.birthDate = ( date instanceof Date )? date : new Date(date);
+  set age(age:string){
+    this._age = parseInt(age).toString();
   }
 
-  get age():number{
+  get age():string{
+    if(!this._birthDate) return !this._age.length ? "" : this._age;
+    
     let today:Date              = new Date(),
-        age:number              = today.getFullYear() - this.birthDate.getFullYear(),
-        monthDifference:number  = today.getMonth() - this.birthDate.getMonth();
+        age:number              = today.getFullYear() - this._birthDate.getFullYear(),
+        monthDifference:number  = today.getMonth() - this._birthDate.getMonth();
 
-    if(monthDifference < 0 || (0 == monthDifference && today.getDate() < this.birthDate.getDate()))
+    if(monthDifference < 0 || (0 == monthDifference && today.getDate() < this._birthDate.getDate()))
       age--;
 
-    return age;
+    this._age = age.toString();
+
+    return this._age;
+  }
+
+  setLabel(label:string):void{
+    this._label = label;
+  }
+
+  toString():string{
+    return (!!this._label && !!this.age) ? this._label + " : " + this.age + " " : "";
   }
 }
 
 @Component({
-  selector: 'app-mat-age-field',
+  selector: 'custom-mat-age-field',
   templateUrl: './mat-age-field.component.html',
   styleUrls: ['./mat-age-field.component.scss'],
   providers: [{provide: MatFormFieldControl, useExisting: MatAgeFieldComponent}],
   host: {
     '[class.example-floating]': 'shouldLabelFloat',
-    '[id]': 'id',
+    '[id]': 'id'
   }
 
 })
 export class MatAgeFieldComponent implements MatFormFieldControl<MatAgeField>, ControlValueAccessor, OnInit {
   static instanceCounter:number     = 0;
   private _value!: MatAgeField;
-  stateChanges                      = new Subject<void>();
-  @HostBinding() id: string         = `app-mat-age-field-${MatAgeFieldComponent.instanceCounter++}`;
+  stateChanges              = new Subject<void>();
+  @HostBinding() id: string         = `custom-mat-age-field-${MatAgeFieldComponent.instanceCounter++}`;
   placeholder: string               = "Select Birth Date";
-  _focused: boolean                 = false;
-  touched:boolean                   = false;
-  empty: boolean                    = false;
-  shouldLabelFloat: boolean         = this._focused;
-  _required: boolean                = false;
-  _disabled: boolean                = false;
-  errorState: boolean               = false;
-  onChange                          = (param:any) => {};
-  onTouched                         = () => {};
+  private _focused: boolean         = false;
+  private touched:boolean           = false;
+  private _required: boolean        = false;
+  private _disabled: boolean        = false;
+  private onChange                  = (param:any) => {};
+  private onTouched                 = () => {};
+  parts:FormGroup                   = this._formBuilder.group({});;                             
 
-  @Input() 
-  appearance:MatFormFieldAppearance = "standard";
+  constructor(private _formBuilder: FormBuilder,
+    private _elementRef: ElementRef<HTMLElement>, 
+    @Optional() @Self() public ngControl:NgControl) {  
 
-  @Input() 
-  label:string                      = "Age";
+    if(this.ngControl != null)
+      this.ngControl.valueAccessor = this;
+  }
 
+  @Input() label!:string;
 
   @Input()
   get value():MatAgeField{
@@ -98,13 +112,20 @@ export class MatAgeFieldComponent implements MatFormFieldControl<MatAgeField>, C
 
   set disabled(value:BooleanInput){
     this._disabled = coerceBooleanProperty(value);
+    this._disabled ? this.parts.disable() : this.parts.enable();
     this.stateChanges.next();
   }
 
-  constructor(private _elementRef: ElementRef<HTMLElement>, 
-    @Optional() @Self() public ngControl:NgControl) { 
-    if(this.ngControl != null)
-      this.ngControl.valueAccessor = this;
+  get empty():boolean{
+    return 0 == this.value.age.length;
+  }
+
+  get shouldLabelFloat():boolean{
+    return this.focused || !this.empty;
+  }
+
+  get errorState():boolean{
+    return this.touched && this.parts.invalid;
   }
 
   writeValue(newValue: MatAgeField): void {
@@ -120,15 +141,34 @@ export class MatAgeFieldComponent implements MatFormFieldControl<MatAgeField>, C
   }
 
   setDescribedByIds(ids: string[]): void {
-    // throw new Error('Method not implemented.');
   }
 
   onContainerClick(event: MouseEvent): void {
-    this.focused = true;
-    this.stateChanges.next();
+    
   }
 
   ngOnInit(): void {
+    this.value.setLabel(this.label);
+
+    let age       = new FormControl(),
+        birthDate = new FormControl();
+
+    age.valueChanges.subscribe(( newAge:string ) => {
+      this._value.age = newAge;
+      this.onChange(this._value);
+    });
+
+    birthDate.valueChanges.subscribe(( newDate:string ) => {
+      this._value.birthDate = newDate;
+      age.setValue(this._value.age);
+      this.onChange(this._value);
+    });
+
+    if(this.required)
+      age.addValidators(Validators.required);
+
+    this.parts.addControl('age', age);
+    this.parts.addControl('birthDate', birthDate);
   }
 
   @HostListener("focusout", ["$event"])
@@ -141,4 +181,9 @@ export class MatAgeFieldComponent implements MatFormFieldControl<MatAgeField>, C
     }
   }
 
+  @HostListener("focusin")
+  onFocusIn() {
+    this.focused = true;
+    this.stateChanges.next();
+  }
 }

@@ -1,0 +1,23 @@
+<div [formGroup]="parts" class="grid c-4 cg-2 rg-2">
+    <mat-select formControlName="state" [placeholder]="languageService.fetchKeyWord(16, language)">
+        <mat-option *ngFor="let state of addressService.fetchVillageList()" [value]="state">{{languageService.fetchKeyWord(state.keyWordId, language)}}</mat-option>
+    </mat-select> 
+
+    <mat-select *ngIf="!!value.selectedState" formControlName="district" [placeholder]="languageService.fetchKeyWord(17, language)">
+        <mat-option *ngFor="let district of value.selectedState.districts" [value]="district">{{languageService.fetchKeyWord(district.keyWordId, language)}}</mat-option>
+    </mat-select>
+
+    <mat-select *ngIf="!!value.selectedDistrict" formControlName="subDistrict" [placeholder]="languageService.fetchKeyWord(18, language)">
+        <mat-option *ngFor="let subDistrict of value.selectedDistrict.subDistricts" [value]="subDistrict">{{languageService.fetchKeyWord(subDistrict.keyWordId, language)}}</mat-option>
+    </mat-select>
+
+    <mat-select *ngIf="!!value.selectedSubDistrict" formControlName="village" [placeholder]="languageService.fetchKeyWord(19, language)">
+        <mat-option *ngFor="let village of value.selectedSubDistrict.villages" [value]="village">{{languageService.fetchKeyWord(village.keyWordId, language)}}</mat-option>
+    </mat-select>
+
+    <input *ngIf="!!value.selectedVillage" class="cs-4" matInput formControlName="addressLine" [placeholder]="languageService.fetchKeyWord(20, language)" (keydown)="fontService.convertChar($event, addressLine, font)" #addressLine>
+
+    <input *ngIf="!!value.selectedVillage" class="cs-4" matInput formControlName="landmark" [placeholder]="languageService.fetchKeyWord(21, language)" (keydown)="fontService.convertChar($event, landMark, font)" #landMark>
+
+    <custom-mat-divided-input *ngIf="!!value.selectedVillage" [language]="language" formControlName="pinCode"></custom-mat-divided-input>
+</div>

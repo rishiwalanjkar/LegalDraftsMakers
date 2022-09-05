@@ -12,7 +12,7 @@
 
 <mat-form-field appearance="outline" [color]="color">
     <mat-select panelClass="button-with-select-tool-dropdown-panel" [(value)]="button.selected" [matTooltip]="button.toolTip">
-        <mat-option *ngFor="let option of button.options;" [style.text-align]="'center'" value="{{option.value}}">
+        <mat-option *ngFor="let option of button.options;" [style.text-align]="'center'" [value]="option.value">
             <span *ngIf="!option.isTemplate" [innerHTML]="option.label"></span>
             <ng-container *ngIf="option.isTemplate" [ngTemplateOutlet]="option.template" [ngTemplateOutletContext]="{value:option.value}"></ng-container>
         </mat-option>

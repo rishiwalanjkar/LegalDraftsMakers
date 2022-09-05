@@ -1,3 +1,5 @@
+@import '../../assets/styles/global-variables.scss';
+
 :host{
         
     mat-card{
@@ -25,7 +27,31 @@ div.tab-contents{
     gap: 10px;
 
     mat-radio-group{
-        margin-top: 20px;
-        margin-bottom: 20px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+}
+
+fieldset{
+    border-color: $transparent-color;
+    padding: 30px;
+    border-radius: 5px;
+    
+    legend{
+        text-align: left;
+
+        mat-radio-group{
+            mat-radio-button{
+                margin: 0px 10px;
+            }
+        }
+
+        mat-radio-button{
+            margin: 0px 10px;
+        }
+    }
+
+    > div{
+        margin: 20px 0px;
     }
 }

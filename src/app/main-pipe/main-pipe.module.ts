@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SafeHtml } from './safe-html.pipe'
+import { SafeHtmlPipe } from './safe-html.pipe';
+import { FormatHtmlSpacePipe } from './format-html-space.pipe'
 
 @NgModule({
-  declarations: [SafeHtml],
+  declarations: [SafeHtmlPipe, FormatHtmlSpacePipe],
   imports: [
     CommonModule
   ],
-  exports:[SafeHtml]
+  exports:[SafeHtmlPipe, FormatHtmlSpacePipe]
 })
 export class MainPipeModule { }

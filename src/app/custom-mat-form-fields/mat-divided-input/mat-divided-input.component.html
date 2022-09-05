@@ -1,12 +1,16 @@
 <div role="group" [formGroup]="parts">
-    <ng-container *ngFor="let input of inputs; let i = index; let last=last;" 
-    >
+    <ng-container *ngFor="let input of inputs; let i = index; let last=last;">
         <input 
-            formControlName="input-{{i}}" 
-            [maxlength]="input.maxLength"
-            [size]="input.maxLength"
+            formControlName="{{i}}" 
+            [type]="input.type"
+            [maxlength]="input.max"
+            [min] = "input.min"
+            [max] = "input.max"
+            [size]="input.size"
             (input)="handleInput(i)"
+            (keydown)="convertChar($event, inputs)"
+            [placeholder]="languageService.fetchKeyWord(input.placeholderKeyWordId, language)"
             (keyup.backspace)="autoFocusPrev(i)" #inputs/>
-        <span *ngIf="!last" [innerText]="separator"></span>
+        <span *ngIf="!last" [innerHTML]="value.separator|formatHtmlSpace"></span>
     </ng-container>
 </div>

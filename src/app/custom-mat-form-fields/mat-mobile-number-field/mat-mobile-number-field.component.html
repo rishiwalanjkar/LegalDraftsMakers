@@ -1,0 +1,4 @@
+<div [formGroup]="parts">
+    <span *ngIf="showContryCode">+91</span>
+    <input matInput formControlName="mobileNumber" type="number" min="1000000000" max="9999999999">
+</div>

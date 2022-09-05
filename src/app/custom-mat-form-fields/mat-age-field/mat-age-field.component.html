@@ -1,7 +1,6 @@
-<mat-form-field [appearance]="appearance">
-    <mat-label>{{label}}</mat-label>
-    <input matInput [placeholder]="placeholder" [value]="value.age">
-    <input type="hidden" [matDatepicker]="picker" (dateChange)="value.setDate(date.value)" #date>
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker matDatepickerApply touchUi startView="year" [startAt]="value.birthDate"></mat-datepicker>
-</mat-form-field>
+<div [formGroup]="parts" class="container">
+    <input formControlName="age" matInput [placeholder]="placeholder">
+    <input formControlName="birthDate" type="hidden" [matDatepicker]="picker">
+    <mat-datepicker-toggle [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker matDatepickerApply touchUi startView="year"></mat-datepicker>
+</div>

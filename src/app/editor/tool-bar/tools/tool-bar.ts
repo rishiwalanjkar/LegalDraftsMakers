@@ -1,29 +1,14 @@
 import { TemplateRef } from "@angular/core";
-import { MatAgeField } from "src/app/custom-mat-form-fields/mat-age-field/mat-age-field.component";
+import { FormControl, FormGroup } from "@angular/forms";
+import { ImageType, MatImageUploadField } from "src/app/custom-mat-form-fields/mat-image-upload-field/mat-image-upload-field.component";
+import { LanguageService } from "src/app/language/language.service";
+import { EditorConfig } from "../../editor.component";
 import { EditorService } from "../../editor.service";
 import { Page, PageDefaults, PageNumberAlignment, PageNumberType } from "../../page/page/page";
-
-export enum FontLanguage{
-    ENGLISH,
-    DEVNAGARI
-}
-
-export interface Font{
-    fontName:string;
-    fontFamily:string;
-    isConvert:boolean;
-    language:FontLanguage
-    keyMappings?:object;
-}
 
 export enum Conversion{
     MM_TO_PIXEL_FACTOR = 3.7795275591,
     PIXEL_TO_MM_FACTOR = 0.2645833333
-}
-
-export enum ImageDisplayType{
-    BACKGROUNG = "Background",
-    BLOCK = "Block"
 }
 
 export enum ToolGroup{
@@ -78,102 +63,6 @@ export enum BulletedList{
     SQUARE          = "square"
 }
 
-export class ImageEvents{
-    public static imageHeightToWidthRatio:number;
-
-    zoom(previewImageElement:any, imageControl:ImageControl, triggeredTool:DialogTool) {
-        let size:string[]           = previewImageElement.style.backgroundSize.split(" "),
-            width:number            = parseInt(size[0]),
-            height:number           = parseInt(size[1]),
-            zoomWidthFactor:number  = 10,
-            zoomHeightFactor:number = ImageEvents.imageHeightToWidthRatio * 10;
-
-        switch(imageControl){
-            case ImageControl.ZOOM_IN:
-                zoomWidthFactor     = zoomWidthFactor;
-                zoomHeightFactor    = zoomHeightFactor;
-                break;
-                
-            case ImageControl.ZOOM_OUT:
-                if(100 >= width || 100 >= height) return;
-
-                zoomWidthFactor     = -zoomWidthFactor;
-                zoomHeightFactor    = -zoomHeightFactor;
-        }
-
-        previewImageElement.style.backgroundSize = (width + zoomWidthFactor) + "% " + (height + zoomHeightFactor) + "% ";
-        triggeredTool.updateData({imageHTML:previewImageElement.cloneNode()});
-    }
-
-    upload(event:any, previewImageElement:any, triggeredTool:DialogTool) {
-        if(event.target.files && event.target.files[0]){
-            const file = event.target.files[0];
-
-            let fileReader = new FileReader();
-
-            fileReader.onload = (e) => {
-                previewImageElement.style.backgroundImage = "url(" + fileReader.result + ")";
-                triggeredTool.updateData({imageHTML:previewImageElement.cloneNode()});
-
-                let img:any = new Image();      
-                img.src = e?.target?.result;
-
-                img.onload = function () {
-                    ImageEvents.imageHeightToWidthRatio = this.height/this.width;
-                }
-            }
-
-            fileReader.readAsDataURL(file);
-        }
-    }
-    
-    move(previewImageElement:any, imageControl:ImageControl, triggeredTool:DialogTool) {
-        let backgroundPosition:string[] = previewImageElement.style.backgroundPosition.split(" "),
-            backgroundPositionX:number  = parseInt(backgroundPosition[0]),
-            backgroundPositionY:number  = parseInt(backgroundPosition[1]),
-            moveFactorX                 = 0,
-            moveFactorY                 = 0;
-
-        switch(imageControl){
-            case ImageControl.MOVE_TOP :
-                if( 0 >= backgroundPositionY ) return;
-                
-                moveFactorY = - ImageControl.MOVE_FACTOR;
-                break;
-
-            case ImageControl.MOVE_RIGHT :
-                if( 100 <= backgroundPositionX ) return;
-                
-                moveFactorX = ImageControl.MOVE_FACTOR
-                break;
-
-            case ImageControl.MOVE_BOTTOM :
-                if( 100 <= backgroundPositionY ) return;
-                
-                moveFactorY = ImageControl.MOVE_FACTOR;
-                break;
-
-            case ImageControl.MOVE_LEFT :
-                if( 0 >= backgroundPositionX ) return;
-                
-                moveFactorX = - ImageControl.MOVE_FACTOR
-        }
-
-        previewImageElement.style.backgroundPosition = (backgroundPositionX + moveFactorX) + "% " + (backgroundPositionY + moveFactorY) + "%";
-        triggeredTool.updateData({imageHTML:previewImageElement.cloneNode()});
-    }
-}
-
-export enum ImageControl {
-    MOVE_TOP,
-    MOVE_RIGHT,
-    MOVE_BOTTOM,
-    MOVE_LEFT,
-    MOVE_FACTOR = 1,
-    ZOOM_IN,
-    ZOOM_OUT
-}
-
 export enum SymbolFlag{
     SYMBOLS,
     GRID_COLUMNS,
@@ -198,6 +87,7 @@ export enum HomeToolGroup{
     BOLD,
     ITALIC,
     UNDERLINE,
+    LINE_SPACING,
     SUPERSCRIPT,
     SUBSCRIPT,
     CHANGE_CASE,
@@ -244,6 +134,7 @@ export enum ToolCommand{
     BOLD,
     ITALIC,
     UNDERLINE,
+    LINE_SPACING,
     SUPERSCRIPT,
     SUBSCRIPT,
     CHANGE_CASE,
@@ -277,6 +168,8 @@ export abstract class Tool{
     private _label:string           = "";
     private _matIcon:string         = "";
     private _toolTip:string         = "";
+    private static _config:EditorConfig;
+    private static _languageService:LanguageService;
     private static _editorService:EditorService;
     private _toolGroup!:ToolGroup;
     public static transmuteTools    = new Array<Tool>(Object.keys(ToolCommand).length);
@@ -300,8 +193,16 @@ export abstract class Tool{
         return this._toolTip;
     }
 
+    get config():EditorConfig{
+        return Tool._config;
+    }
+
     get editorService():EditorService{
         return Tool._editorService;
+    }
+
+    get languageService():LanguageService{
+        return Tool._languageService;
     }
 
     get id():string{
@@ -322,6 +223,14 @@ export abstract class Tool{
 
     setId(id:string):void{
         this._id = id;
+    }
+
+    static setConfig(config:EditorConfig):void{
+        Tool._config = config;
+    }
+
+    static setLanguageService(languageService:LanguageService):void{
+        Tool._languageService = languageService;
     }
 
     static setEditorService(editorService:EditorService):void{
@@ -468,9 +377,22 @@ export class SoloButtonTool extends ButtonTool{
   
 export class ButtonGroupTool extends ButtonTool{
     private buttonToolGroup :SoloButtonTool[] = [];
+    private _selectedButton!:SoloButtonTool;
 
     constructor(command:ToolCommand){
         super(command);
+    }
+
+    get selectedButton():SoloButtonTool{
+        return this._selectedButton;
+    }
+
+    set selectedButton(selectedButton:SoloButtonTool){
+        this._selectedButton = selectedButton;
+    }
+
+    setSelectedButton(selectedButton:SoloButtonTool){
+        this._selectedButton = selectedButton;
     }
 
     add(soloButtonTool:SoloButtonTool):void{
@@ -485,8 +407,8 @@ export class ButtonGroupTool extends ButtonTool{
         return true;
     }
 
-    updateView(data: any): void {
-        
+    updateView(data: SoloButtonTool): void {
+        this._selectedButton = data;
     }
     
     [Symbol.iterator](): Iterator<ButtonTool, ButtonTool, undefined> {
@@ -595,7 +517,6 @@ export class SelectTool extends Tool{
         if(!!data) 
             this.setSelected(data);  
     }
-
 
     triggerClick(): void {
         // (document.getElementById(this.id)?.firstChild as HTMLElement).click();
@@ -764,7 +685,7 @@ export class DialogTool extends Tool {
     }
 
     setData(data:object):void{
-        this._data = data;
+        this._data = {...data, ...{consoleData : () => console.log(data)}};
     }
 
     getData():any{
@@ -870,7 +791,6 @@ export class ToolFactory{
                 justify:ButtonTool              = new SoloButtonTool(ToolCommand.JUSTIFY_ALL);
 
                 alignLeft.setIcon("format_align_left");
-                alignLeft.on();
                 alignCenter.setIcon("format_align_center");
                 alignRight.setIcon("format_align_right");
                 justify.setIcon("format_align_justify");
@@ -885,7 +805,8 @@ export class ToolFactory{
                 alignmentGroup.add(alignRight);
                 alignmentGroup.add(justify);
                 alignmentGroup.setToggle(true);
-
+                alignmentGroup.markTransmute();
+                alignmentGroup.setSelectedButton(alignLeft);
                 alignmentGroup.setToolGroup(ToolGroup.HOME);
 
                 tool = alignmentGroup;
@@ -951,10 +872,15 @@ export class ToolFactory{
                     minColumns          : 2,
                     rowHeight           : 30,
                     minRowHeight        : 30,
-                    headers             : (columns:number) => new Array(columns),
-                    panelHeight         : (columns:number, headerInputHeight:number = 70) => headerInputHeight * (columns + 1) + 'px',
+                    headers             : (columns:number) => {
+                                            table.getData().headerLabels[0] = table.getData().hasAutoSerialize ? table.languageService.fetchKeyWord(60, table.config.draftLanguage) : "";
+
+                                            return new Array(columns);
+                                        },
                     headerLabels        : []
                 });
+
+                
                 table.setToolGroup(ToolGroup.TABLE);
 
                 tool = table;
@@ -1206,7 +1132,22 @@ export class ToolFactory{
 
                 tool = underline;
                 break;
-            
+           
+            case ToolCommand.LINE_SPACING:
+                let lineSpacing:SelectTool  = new SelectTool(option);
+                lineSpacing.setToolTip("Change line spacing");
+                lineSpacing.setLabel("Line Spacing");
+                lineSpacing.setToolGroup(ToolGroup.HOME);
+                lineSpacing.setOptions([
+                                            new SelectOption("1.5", "1.5"),
+                                            new SelectOption("2", "2"),
+                                            new SelectOption("2.5", "2.5"),
+                                            new SelectOption("3", "3")                        
+                                        ])
+
+                tool = lineSpacing;
+                break;
+               
             case ToolCommand.SUPERSCRIPT:
                 let superscript:SoloButtonTool = new SoloButtonTool(option);
                 superscript.setToolTip("Superscript the text");
@@ -1256,64 +1197,22 @@ export class ToolFactory{
                 image.setToolGroup(ToolGroup.HOME);
                 
                 image.setData({
-                    imageHTML               : new Object(),
-                    width                   : ():string=>{
-                                                return (ImageDisplayType.BACKGROUNG == image.getData().displayType) 
-                                                    ? "100mm" 
-                                                        : image.getData().selectedImageSize[0] + "mm";
-                                            },
-                    height                  : ():string=>{
-                                                return (ImageDisplayType.BACKGROUNG == image.getData().displayType) 
-                                                    ? "150mm" 
-                                                        : image.getData().selectedImageSize[1] + "mm";
-                                            },
-                    displayType             : ImageDisplayType.BACKGROUNG,
-                    getAllDisplayTypes      : ()=>Object.values(ImageDisplayType),
-                    pageNumber              : 1,
+                    form                    : new FormGroup({
+                                                imageUploadControl          :  new FormControl(new MatImageUploadField(ImageType.PASSPORT_PHOTO)),
+                                                selectedImageTypeControl   :  new FormControl(ImageType.PASSPORT_PHOTO),
+                                                pageNumberControl          :  new FormControl(1)
+                                            }),
+                    isShowPageNumberControl : ():boolean => ImageType.BACKGROUND == image.getData().form.controls['selectedImageTypeControl'].value,
+                    getImageTypes           : ()=>Object.values(ImageType),
                     maxPageNumber           : () => document.getElementsByTagName("app-page").length,
-                    imageSizes              : {
-                                                passportPhoto   : {
-                                                                    label   : "Passport Photo", 
-                                                                    size    : [51, 51]
-                                                                },
-                                                adharCard       : {
-                                                                    label   : "Adhar Card", 
-                                                                    size    : [85, 55]
-                                                                },
-                                                fourBySix       : {
-                                                                    label   : "4*6", 
-                                                                    size    : [101.6, 152.4]
-                                                                },
-                                                fiveBySeven     : {
-                                                                    label   : "5*7", 
-                                                                    size    : [127, 177.8]
-                                                                }
-                                            },
-                    selectedImageSize       : [51, 51],
-                    isShowMask              : ():boolean => ImageDisplayType.BLOCK == image.getData().displayType
-                                                             && image.getData().selectedImageSize[0] == image.getData().imageSizes.passportPhoto.size[0]
-                                                             && image.getData().selectedImageSize[1] == image.getData().imageSizes.passportPhoto.size[1],
-                    getImageSizes           : () => Object.values(image.getData().imageSizes),
-                    getPassPortPhotoMask    : () => "<path d='M" + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.5 +" 1 " +
-                                                                    "L1 1 "+
-                                                                    "1 " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.7 + 
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.4 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.6 + 
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.4 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.5 + 
-                                                                    " C" + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.34 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.53 + 
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.1 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.04 + 
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.5 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.05 + 
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.9 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.04 + 
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.67 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.53 + 
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.6 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.5 + 
-                                                                    " L" + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.6 + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.6 + 
-                                                                    " " + (parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR - 1) + " " + parseInt(image.getData().imageSizes.passportPhoto.size[1]) * Conversion.MM_TO_PIXEL_FACTOR * 0.7 + 
-                                                                    " " + (parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR - 1) +  " 1" +
-                                                                    " " + parseInt(image.getData().imageSizes.passportPhoto.size[0]) * Conversion.MM_TO_PIXEL_FACTOR * 0.6 +" 1 " +
-                                                                    " Z'/>"
+                    
                 });
 
-                image.setEvents(new ImageEvents());
-                
+                image.getData().form.controls['selectedImageTypeControl'].valueChanges.subscribe((imageType:ImageType)=>{
+                    image.getData().form.controls['imageUploadControl'].value.imageType = imageType;
+                    image.getData().form.controls['imageUploadControl'].setValue(image.getData().form.controls['imageUploadControl'].value);
+                });
+
                 tool = image;
                 break;
             
@@ -1345,12 +1244,30 @@ export class ToolFactory{
                 personalInfo.setWidth(900);
 
                 personalInfo.setData({
-                    blockCount              : 1,
-                    blockCaption            : "",
-                    blocks                  : [""],
-                    defaultBirthDate        : new MatAgeField(),
-                    getIndividualBlockLabel : (blockIndex:number) => 1 == personalInfo.getData().blockCount ? "Block" : "Block " + (blockIndex + 1),
-                    getDummyBlocks          : () => new Array(personalInfo.getData().blockCount)
+                    blockCount                      : 1,
+                    blockCaption                    : "",
+                    showFatherOrHusbandNameField    : false,
+                    showMobileNumberField           : false,
+                    showAdharNumberField            : false,
+                    showPanNumberField              : false,
+                    showSignatureTable              : false,
+                    inline                          : false,
+                    htmlBlocks                      : new Object(),
+                    names                           : new Object(),
+                    addresses                       : new Object(),
+                    passportPhotos                  : new Object(),
+                    signatureTable                  : new Object(),
+                    getBlocks                       : (tableElement?:HTMLTableElement) => {
+                                                        if(!!tableElement)
+                                                            personalInfo.getData().signatureTable = tableElement;
+                                                        
+                                                        return new Array(personalInfo.getData().blockCount)
+                                                    },
+                    setHtml                         : (blockIndex:number, documentFragment:DocumentFragment) => personalInfo.getData().htmlBlocks = {...personalInfo.getData().htmlBlocks, ...{[blockIndex]:documentFragment}},
+                    setName                         : (blockIndex:number, name:string) => personalInfo.getData().names = {...personalInfo.getData().names, ...{[blockIndex]:name}},
+                    setAddress                      : (blockIndex:number, address:string) => personalInfo.getData().addresses = {...personalInfo.getData().addresses, ...{[blockIndex]:address}},
+                    setPassportPhoto                : (blockIndex:number, passportPhoto:string) => personalInfo.getData().passportPhotos = {...personalInfo.getData().passportPhotos, ...{[blockIndex]:passportPhoto}},
+                    getBlockLabel                   : (blockIndex:number) => personalInfo.getData().blockCaption + (1 == personalInfo.getData().blockCount ? "" : " " + (blockIndex + 1))
                 });
 
                 tool = personalInfo;

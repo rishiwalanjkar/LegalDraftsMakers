@@ -1,8 +1,8 @@
 <div *ngIf="button.isToggle then toggleButton else plainButton"></div>
 
 <ng-template #toggleButton>
-    <mat-button-toggle-group *ngIf="button.isGroup(); else soloToggleButton">
-        <mat-button-toggle *ngFor="let soloButtonTool of button" (click)="soloButtonTool.click()" [checked]="soloButtonTool.isON" [matTooltip]="soloButtonTool.toolTip">
+    <mat-button-toggle-group *ngIf="button.isGroup(); else soloToggleButton" [(ngModel)]="button.selectedButton">
+        <mat-button-toggle *ngFor="let soloButtonTool of button" (click)="soloButtonTool.click()" [value]="soloButtonTool" [matTooltip]="soloButtonTool.toolTip">
             <mat-icon *ngIf="soloButtonTool.hasIcon()" [color]="color">{{soloButtonTool.icon}}</mat-icon>
             <span style="font-size: 20px;" *ngIf="soloButtonTool.hasLabel()" [innerHTML]="soloButtonTool.label"></span>
         </mat-button-toggle>

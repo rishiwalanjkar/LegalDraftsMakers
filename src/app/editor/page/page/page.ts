@@ -1,4 +1,5 @@
-import { Font, SelectTool, Tool, ToolCommand } from "../../tool-bar/tools/tool-bar";
+import { Font } from "src/app/font/font.service";
+import { SelectTool, Tool, ToolCommand } from "../../tool-bar/tools/tool-bar";
 
 export enum PageDefaults{
     WIDTH   = 210, 
@@ -180,6 +181,10 @@ export class Page{
 
     get fontSize():string{
         return !!(Tool.tools[ToolCommand.SET_FONT_SIZE] as SelectTool)?.selected ? (Tool.tools[ToolCommand.SET_FONT_SIZE] as SelectTool)?.selected +"pt" : "";
+    }
+
+    get lineSpacing():string{
+        return !!(Tool.tools[ToolCommand.LINE_SPACING] as SelectTool)?.selected ? (Tool.tools[ToolCommand.LINE_SPACING] as SelectTool)?.selected : "";
     }
 
     get fontFamily():string{
