@@ -1,7 +1,7 @@
 <div role="group" [formGroup]="parts">
     <ng-container *ngFor="let input of inputs; let i = index; let last=last;">
         <input 
-            formControlName="{{i}}" 
+            [formControlName]="i" 
             [type]="input.type"
             [maxlength]="input.max"
             [min] = "input.min"

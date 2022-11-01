@@ -1,1 +1,196 @@
-<p>ready-draft works!</p>
+<mat-stepper class="drafting-stepper" [linear]="true" [orientation]="(stepperOrientation | async)!" [selectedIndex]="draftingStepIndex" (selectionChange)="draftingStepIndex = $event.selectedIndex; $event.previouslySelectedIndex < $event.selectedIndex ? next($event.previouslySelectedStep.label) : back($event.selectedStep.label);" #draftingStepper>
+    <mat-step [label]="step.SEARCH_DRAFT" [stepControl]="searchDraftFormGroup">
+        <div class="content-pane grid c-1 rg-2 h-ac v-as" [formGroup]="searchDraftFormGroup">
+            <div class="initial-search-box grid c-4 cg-2 v-ae">
+                <mat-form-field *ngIf="!isSelectedLanguageEnglish()" appearance="outline">
+                    <mat-label>Font</mat-label>
+                    <mat-select formControlName="selectedFontControl">
+                        <mat-option *ngFor="let font of fonts" [value]="font">{{font.fontName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" [ngClass]="isSelectedLanguageEnglish() ? 'cs-4' : 'cs-3'">
+                    <mat-icon matPrefix>search</mat-icon>
+                    <mat-label>Search Draft</mat-label>
+                    <input matInput formControlName="searchQueryControl" (keydown)="isSelectedLanguageEnglish() ? true : fontService.convertChar($event, searchField, selectedFont)" #searchField/>
+                </mat-form-field>
+            </div>
+        
+            <button matStepperNext mat-raised-button color="primary" (click)="next(step.SEARCH_DRAFT)">Next</button>
+        
+            <mat-chip-list formControlName="selectedLanguageControl">
+                <mat-chip *ngFor="let language of languageService.fetchLanguages();" color="accent" (click)="setSelectedLanguage($any(language))" [value]="language">{{language}}</mat-chip>
+            </mat-chip-list>
+        </div>
+    </mat-step>
+
+    <mat-step [label]="step.PICK_A_DRAFT" [stepControl]="pickDraftFormGroup">
+        <div class="content-pane grid c-1 rg-2 h-ac v-as">
+            <div class="mat-elevation-z12 search-result">
+                <table mat-table [dataSource]="searchResultDataSource">
+                    <ng-container matColumnDef="pages">
+                        <th mat-header-cell *matHeaderCellDef>{{languageService.fetchKeyWord(60, selectedLanguage)}}</th>
+                        <td mat-cell *matCellDef="let element">{{(searchResultDataSource.filteredData|indexOf:element) + 1}}</td>
+                    </ng-container>
+        
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef>{{languageService.fetchKeyWord(61, selectedLanguage)}}</th>
+                        <td mat-cell *matCellDef="let element">{{element.name}}</td>
+                    </ng-container>
+        
+                    <ng-container matColumnDef="documentType">
+                        <th mat-header-cell *matHeaderCellDef>
+                            <mat-select (selectionChange)="filterSearchResult($event.value)" [ngModel]="documentTypeFilterKeywordIds[0]">
+                                <mat-option *ngFor="let keywordId of documentTypeFilterKeywordIds;" [value]="keywordId">{{languageService.fetchKeyWord(keywordId, selectedLanguage)}}</mat-option>
+                            </mat-select>
+                        </th>
+                        <td mat-cell *matCellDef="let element">{{documentTypeCaption(element.documentType)}}</td>
+                    </ng-container>
+        
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row (click)="selectedDraft = row" [class.row-is-clicked]="row == selectedDraft" *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+                
+                <mat-paginator [pageSize]="10" #searchResultPaginator showFirstLastButtons></mat-paginator>
+            </div>
+            <div class="grid c-2 cg-2">
+                <button matStepperPrevious mat-raised-button color="accent">Back</button>
+                <button matStepperNext mat-raised-button color="primary" (click)="next(step.PICK_A_DRAFT)">Next</button>
+            </div>
+        </div>
+    </mat-step>
+
+    <mat-step [label]="step.FILL_DETAILS" [editable]="false" [stepControl]="fillDetailsFormGroup">
+        <div class="content-pane grid c-1 rg-2 h-ac v-as">
+            <mat-stepper orientation="vertical" class="mat-elevation-z8 fill-details" [linear]="true" [formGroup]="fillDetailsFormGroup">
+                <mat-step *ngFor="let quickEditTag of editableQuickEditTags; let firstStep = first; let lastStep = last;" [ngSwitch]="$any(quickEditTag.data).format" [formGroupName]="quickEditTag.id" [stepControl]="getFillDetailsControl(quickEditTag.id)">
+                    
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.PLAIN_INPUT_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <input matInput formControlName="formControl" [required]="true"/>
+                    </mat-form-field>
+    
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.DIVIDED_INPUT_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <custom-mat-divided-input [value]="$any(quickEditTag.data).dividedInput|matDividedInput" formControlName="formControl" [required]="true"></custom-mat-divided-input>
+                    </mat-form-field>
+    
+                    <mat-radio-group *ngSwitchCase="quickEditFieldFormat.RADIO_FIELD" color="primary" class="grid c-8 cg-2" formControlName="formControl" [required]="true">
+                        <mat-radio-button *ngFor="let choice of $any(quickEditTag.data).options|jsonParse;" [value]="$any(choice).output">{{$any(choice).option}}</mat-radio-button>
+                    </mat-radio-group>
+    
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.LIST_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <mat-select formControlName="formControl" [required]="true">
+                            <mat-option *ngFor="let choice of ($any(quickEditTag.data).options|jsonParse)" [value]="$any(choice).output">{{$any(choice).option}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+    
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.PLAIN_DATE_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <input matInput [matDatepicker]="picker" formControlName="formControl" [required]="true">
+                        <mat-hint>DD/MM/YYYY</mat-hint>
+                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-datepicker #picker matDatepickerApply touchUi startView="year"></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.AGE_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <custom-mat-age-field formControlName="formControl" [required]="true"></custom-mat-age-field>
+                    </mat-form-field>
+
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.PASSPORT_PHOTO_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <custom-mat-image-upload-field formControlName="formControl" [required]="true"></custom-mat-image-upload-field>
+                    </mat-form-field>
+
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.ADHAR_CARD_PHOTO_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <custom-mat-image-upload-field formControlName="formControl" [required]="true"></custom-mat-image-upload-field>
+                    </mat-form-field>
+
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.FOUR_BY_SIX_PHOTO_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <custom-mat-image-upload-field formControlName="formControl" [required]="true"></custom-mat-image-upload-field>
+                    </mat-form-field>
+
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.FIVE_BY_SEVEN_PHOTO_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <custom-mat-image-upload-field formControlName="formControl" [required]="true"></custom-mat-image-upload-field>
+                    </mat-form-field>
+
+                    <div class="personal-info-block grid c-1 rg-2" *ngSwitchCase="quickEditFieldFormat.PERSONAL_INFORMATION_FIELD">
+                        <app-personal-info-block *ngFor="let item of $any(quickEditTag.data|enableAddRemove).data; let i = index;"
+                            appearance="outline"
+                            [(inline)]="$any(quickEditTag.data).inline"
+                            [label]="$any(quickEditTag.data).label + ($any($any(quickEditTag.data).multiple|jsonParse) && 1 < $any(quickEditTag.data).data.length ? ' ' + (i+1) : '')"
+                            [language]="selectedLanguage"
+                            [font]="selectedFont"
+                            [showAdharNumberField]="$any($any(quickEditTag.data).showAdharNumberField|jsonParse)"
+                            [showFatherOrHusbandNameField]="$any($any(quickEditTag.data).showFatherOrHusbandNameField|jsonParse)"
+                            [showMobileNumberField]="$any($any(quickEditTag.data).showMobileNumberField|jsonParse)"
+                            [showPanNumberField]="$any($any(quickEditTag.data).showPanNumberField|jsonParse)"
+                            [showPassportPhoto]="$any($any(quickEditTag.data).signatureTableHasPhotoColumn|jsonParse)"
+                            (valueChange)="setFormControlValue(quickEditTag.id, $event , i)"
+                            [required]="true"
+                        >
+                        </app-personal-info-block>
+
+                        <div *ngIf="$any($any(quickEditTag.data).multiple|jsonParse)">
+                            <button mat-stroked-button color="primary" [style.float]="'right'" (click)="$any(quickEditTag.data).add()">Add More</button>
+                            <button *ngIf="$any(quickEditTag.data).showRemoveButton()" mat-stroked-button color="accent" [style.float]="'right'" [style.marginRight]="'20px'" (click)="removeSubFormControl(quickEditTag.id, ($any(quickEditTag.data).data.length - 1)); $any(quickEditTag.data).remove()">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <ng-container *ngSwitchCase="quickEditFieldFormat.TABLE_FIELD">
+                        <ng-container *ngTemplateOutlet="matTable; context:{data:quickEditTag.data|buildMatTableData, formControlName:quickEditTag.id}"></ng-container>
+                    </ng-container>
+
+                    <mat-form-field *ngSwitchCase="quickEditFieldFormat.ADDRESS_FIELD" appearance="outline">
+                        <mat-label>{{$any(quickEditTag.data).label}}</mat-label>
+                        <custom-mat-address-field [label]="$any(quickEditTag.data).label" [font]="selectedFont" [language]="selectedLanguage" formControlName="formControl" [required]="true"></custom-mat-address-field>
+                    </mat-form-field>
+
+                    <div>
+                        <button *ngIf="!firstStep" mat-button matStepperPrevious>Back</button>
+                        <button *ngIf="!lastStep" mat-button matStepperNext>Next</button>
+                    </div>
+                </mat-step>
+            </mat-stepper>
+            <div class="grid c-2 cg-2">
+                <button matStepperPrevious mat-raised-button color="accent">Back</button>
+                <button mat-raised-button *ngIf="fillDetailsFormGroup.valid" color="primary" matStepperNext (click)="next(step.FILL_DETAILS)">Submit</button>
+            </div>
+        </div>
+    </mat-step>
+
+    <mat-step [label]="step.VIEW_IN_EDITOR" [editable]="false">
+        <app-editor class="mat-elevation-z12" [editorConfig]="editorConfig" [draft]="selectedDraft"></app-editor>
+    </mat-step>
+</mat-stepper>
+
+<ng-template let-data="data" let-formControlName="formControlName" #matTable>
+        <table mat-table [dataSource]="data.dataSource|enableAddRemove" [class.auto-serialize]="data.autoSerializable">
+
+            <ng-container *ngFor="let columnName of data.displayedColumns; let first = first;" [matColumnDef]="columnName">
+                <th mat-header-cell *matHeaderCellDef>{{columnName}}</th>
+                <td mat-cell *matCellDef="let element">
+                    <mat-form-field *ngIf="!first || !data.autoSerializable" appearance="outline">
+                        <mat-label></mat-label>
+                        <textarea matInput [(ngModel)]="element[columnName]" (ngModelChange)="setFormControlValue(formControlName, data.dataSource)"></textarea>
+                    </mat-form-field>
+                </td>  
+            </ng-container> 
+
+            <tr mat-header-row *matHeaderRowDef="data.displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: data.displayedColumns;"></tr>
+        </table>
+
+        <div [style.float]="'right'">
+            <button mat-stroked-button *ngIf="data.showRemoveButton()" color="accent" [style.marginRight]="'20px'" (click)="data.remove()">
+                Remove
+            </button>
+            <button mat-stroked-button color="primary" (click)="data.add()">Add More</button>
+        </div>
+</ng-template>

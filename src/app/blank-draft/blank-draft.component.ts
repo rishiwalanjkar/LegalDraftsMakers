@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Draft } from '../draft/draft.service';
 import { EditorConfig } from '../editor/editor.component';
-import { FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup, ToolGroup } from '../editor/tool-bar/tools/tool-bar';
+import { ToolGroup } from '../editor/tool-bar/tools/tool-bar';
 
 @Component({
   selector: 'app-blank-draft',
@@ -9,14 +10,14 @@ import { FileToolGroup, HomeToolGroup, LayoutToolGroup, TableToolGroup, ToolGrou
 })
 export class BlankDraftComponent implements OnInit {
   editorConfig:EditorConfig = new EditorConfig();
+  draft!:Draft;
   
   constructor() {
-    this.editorConfig.setTools(ToolGroup.FILE, [FileToolGroup.FIND, FileToolGroup.FIND_AND_REPLACE]);
-    this.editorConfig.setTools(ToolGroup.HOME, [HomeToolGroup.UNDO, HomeToolGroup.REDO, HomeToolGroup.SUPERSCRIPT, HomeToolGroup.SUPERSCRIPT, HomeToolGroup.CHANGE_CASE,
-                                                  HomeToolGroup.FORECOLOR, HomeToolGroup.HIGHLIGHT, HomeToolGroup.JUSTIFY, HomeToolGroup.INDENT, HomeToolGroup.OUTDENT,
-                                                  HomeToolGroup.BULLETED_LIST, HomeToolGroup.NUMBERED_LIST, HomeToolGroup.SYMBOL, HomeToolGroup.IMAGE]);
-    this.editorConfig.setTools(ToolGroup.TABLE, [TableToolGroup.TABLE, TableToolGroup.MERGE_CELLS, TableToolGroup.SPLIT_CELL, TableToolGroup.INSERT_COLUMNS_AND_ROWS, TableToolGroup.DELETE_COLUMNS_AND_ROWS]);
-    this.editorConfig.setTools(ToolGroup.LAYOUT, [LayoutToolGroup.PAGE_SIZE, LayoutToolGroup.PAGE_ORIENTATION, LayoutToolGroup.PAGE_MARGINS, LayoutToolGroup.PAGE_NUMBER]);
+    this.editorConfig.setTools(ToolGroup.FILE);
+    this.editorConfig.setTools(ToolGroup.HOME);
+    this.editorConfig.setTools(ToolGroup.TABLE);
+    this.editorConfig.setTools(ToolGroup.LAYOUT);
+    this.editorConfig.setTools(ToolGroup.BLOCK);
   }
 
   ngOnInit(): void {

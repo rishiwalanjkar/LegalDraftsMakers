@@ -1,11 +1,11 @@
 <div class="left"></div>
 <div class="content">
-    <div class="header" [style.alignItems]="page.pageNumberAlignment">
-        <span *ngIf="page.isShowHeaderPageNumber">{{page.pageNumber}}</span>
+    <div class="header" [style.alignItems]="value.pageNumberAlignment">
+        <span *ngIf="value.isShowHeaderPageNumber">{{value.pageNumber}}</span>
     </div>
-    <div class="body" [style.fontFamily]="page.fontFamily" [style.fontSize]="page.fontSize" [contentEditable]="true" [innerHTML]="page.body"></div>
-    <div class="footer" [style.alignItems]="page.pageNumberAlignment">
-        <span *ngIf="page.isShowFooterPageNumber">{{page.pageNumber}}</span>
+    <div class="body" [style.fontFamily]="value.fontFamily" [style.fontSize]="value.fontSize" [contentEditable]="true" [innerHTML]="value.body|safeHtml"></div>
+    <div class="footer" [style.alignItems]="value.pageNumberAlignment">
+        <span *ngIf="page.isShowFooterPageNumber">{{value.pageNumber}}</span>
     </div>
 </div>
 <div class="right"></div>

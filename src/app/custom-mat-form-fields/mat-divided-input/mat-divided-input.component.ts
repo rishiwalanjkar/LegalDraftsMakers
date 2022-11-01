@@ -5,6 +5,7 @@ import { Component, ElementRef, HostBinding, HostListener, Input, OnDestroy, OnI
 import { ControlValueAccessor, FormBuilder, NgControl, Validators, FormControl } from '@angular/forms';
 import { MatFormFieldControl } from '@angular/material/form-field';
 import { Subject } from 'rxjs';
+import { DividedInputComponents } from 'src/app/create-draft-template/create-draft-template.component';
 import { Font, FontService } from 'src/app/font/font.service';
 import { Language, LanguageService } from 'src/app/language/language.service';
 
@@ -23,12 +24,10 @@ export class MatDividedInputConstituent{
 }
 
 export class MatDividedInput{
-  private _errorState:boolean = false;
-
   constructor(private inputs:MatDividedInputConstituent[], public separator:string){}
 
-  toString():string{
-    return new Array(this.inputs.length).fill(null).map((value:any, index:number) => this.inputs[index].value).join(this.separator);
+  toString(enabledDividedInputComponents?:any):string{
+    return new Array(this.inputs.length).fill(null).map((value:any, index:number) => this.inputs[index].value).filter((value:any, index:number) => "undefined" == typeof enabledDividedInputComponents || !!enabledDividedInputComponents && (enabledDividedInputComponents[DividedInputComponents.AGGREGATE] || enabledDividedInputComponents[(index+1).toString()])).join(this.separator);
   }
 
   isEmpty():boolean{
@@ -55,10 +54,6 @@ export class MatDividedInput{
     return InputType.TEXT == this.getInputConstituentType(inputIndex) 
             ? this.getInputConstituentMax(inputIndex) <= this.getInputConstituentLength(inputIndex)
               : this.getInputConstituentMax(inputIndex).toString().length <= this.getInputConstituentLength(inputIndex);
-  }
-
-  get errorState():boolean{
-    return this._errorState;
   }
 
   getInputConstituents():MatDividedInputConstituent[]{
@@ -97,8 +92,12 @@ export class MatDividedInput{
     return this.inputs[inputIndex].type;
   }
 
-  setErrorState(errorState:boolean){
-    this._errorState = errorState;
+  hasPlaceholder():boolean{
+    for(let i = 0; i < this.inputs.length; i++)
+      if(0 < this.inputs[i].placeholderKeyWordId.toString().trim().length)
+        return true;
+    
+    return false;
   }
 }
 
@@ -204,9 +203,13 @@ export class MatDividedInputComponent implements MatFormFieldControl<MatDividedI
 
     for(const key of Object.keys(this.parts.controls)){
       isAnyControlInvalid ||= this.parts.controls[key].invalid;
+      this.ngControl.control!.setErrors({...this.ngControl.control?.errors, ...this.parts.controls[key].errors});
     }
 
-    return isAnyControlInvalid && this.touched;
+    if(this.ngControl.control!.errors && 0 == Object.keys(this.ngControl.control!.errors).length)
+      this.ngControl.control!.setErrors(null);
+
+    return this.touched && isAnyControlInvalid;
   };
 
   setDescribedByIds(ids: string[]): void {
@@ -256,11 +259,13 @@ export class MatDividedInputComponent implements MatFormFieldControl<MatDividedI
 
         if(this.required)
           formControl.addValidators(Validators.required);
-
+          
         formControl.valueChanges.subscribe((newVal:string|number)=>{
           this._value.setInputConstituentValue(i, newVal);
-          this._value.setErrorState(this.errorState);
           this.onChange(this._value);
+
+          if(formControl.invalid)
+            this.ngControl.control!.setErrors(formControl.errors);
         });
 
         this.parts.addControl(i.toString(), formControl);

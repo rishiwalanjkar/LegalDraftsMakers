@@ -14,6 +14,10 @@ export class MatAdharNumberField{
   lastQuadrantInput:MatDividedInputConstituent    = new MatDividedInputConstituent("", 45, InputType.NUMBER, 0, 9999, 20);
   adharNumberInput:MatDividedInput                = new MatDividedInput([this.firstQuadrantInput, this.middleQuadrantInput, this.lastQuadrantInput], " ");
 
+  get value():string{
+    return !this.adharNumberInput.toString().trim().length ? "" : this.adharNumberInput.toString();
+  }
+
   setLabel(label:string):void{
     this._label = label;
   }
@@ -26,8 +30,8 @@ export class MatAdharNumberField{
     return this.adharNumberInput.isEmpty();
   }
 
-  get errorState():boolean{
-    return this.adharNumberInput.errorState;
+  hasPlaceholder():boolean{
+    return this.adharNumberInput.hasPlaceholder();
   }
 }
 
@@ -84,7 +88,7 @@ export class MatAdharNumberFieldComponent implements MatFormFieldControl<MatAdha
   }
 
   get shouldLabelFloat():boolean{
-    return this.focused || !this.empty;
+    return this.focused || !this.empty || this.value.hasPlaceholder();
   }
 
   @Input()
@@ -109,7 +113,7 @@ export class MatAdharNumberFieldComponent implements MatFormFieldControl<MatAdha
   }
 
   get errorState():boolean{
-    return this.touched && this.value.errorState;
+    return this.touched && this.parts.controls['adharNumber'].invalid;
   }
 
   setDescribedByIds(ids: string[]): void {

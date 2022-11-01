@@ -18,7 +18,12 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
+import { DateAdapter, MatNativeDateModule, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatTableModule } from '@angular/material/table';
+import { CdkColumnDef } from '@angular/cdk/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { MainPipeModule } from '../main-pipe/main-pipe.module';
 
@@ -33,6 +38,8 @@ import { MatMobileNumberFieldComponent } from '../custom-mat-form-fields/mat-mob
 import { MatAdharNumberFieldComponent } from '../custom-mat-form-fields/mat-adhar-number-field/mat-adhar-number-field.component';
 import { MatPanNumberFieldComponent } from '../custom-mat-form-fields/mat-pan-number-field/mat-pan-number-field.component';
 import { MatImageUploadFieldComponent } from '../custom-mat-form-fields/mat-image-upload-field/mat-image-upload-field.component';
+import { MatChipsModule } from '@angular/material/chips';
+import { MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 
 
 @NgModule({
@@ -47,7 +54,7 @@ import { MatImageUploadFieldComponent } from '../custom-mat-form-fields/mat-imag
     MatAdharNumberFieldComponent,
     MatPanNumberFieldComponent,
     PersonalInfoBlockComponent,
-    MatImageUploadFieldComponent
+    MatImageUploadFieldComponent,
   ],
   imports: [
     MatFormFieldModule,
@@ -61,7 +68,8 @@ import { MatImageUploadFieldComponent } from '../custom-mat-form-fields/mat-imag
     ReactiveFormsModule,
     MatCheckboxModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatChipsModule
   ],
   exports:[
     CommonModule,
@@ -93,8 +101,17 @@ import { MatImageUploadFieldComponent } from '../custom-mat-form-fields/mat-imag
     MatAdharNumberFieldComponent,
     MatPanNumberFieldComponent,
     MatImageUploadFieldComponent,    
-    PersonalInfoBlockComponent
+    PersonalInfoBlockComponent,
+    MatChipsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatStepperModule,
+    MatSnackBarModule
   ],
-  providers : [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }]
+  providers : [
+    {provide: MAT_DATE_LOCALE, useValue: 'en-GB'}, 
+    {provide: DateAdapter, useClass: MomentDateAdapter, deps: [MAT_DATE_LOCALE]},
+    {provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS}, 
+    CdkColumnDef]
 })
 export class SharedModule { }

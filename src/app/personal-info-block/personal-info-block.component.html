@@ -5,54 +5,54 @@
     
     <mat-form-field class="cs-2" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(23, language)}}</mat-label>
-        <custom-mat-name-field formControlName="name" [required]="true" [language]="language" [font]="font"></custom-mat-name-field>
+        <custom-mat-name-field formControlName="name" [required]="required" [language]="language" [font]="font"></custom-mat-name-field>
     </mat-form-field>
 
     <mat-form-field *ngIf="showFatherOrHusbandNameField" class="cs-2" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(24, language)}}</mat-label>
-        <custom-mat-father-or-husband-name-field formControlName="fatherOrHusbandName" [required]="true" [language]="language" [font]="font"></custom-mat-father-or-husband-name-field>
+        <custom-mat-father-or-husband-name-field formControlName="fatherOrHusbandName" [required]="required" [language]="language" [font]="font"></custom-mat-father-or-husband-name-field>
     </mat-form-field> 
 
     <mat-form-field [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(10, language)}}</mat-label>
-        <custom-mat-age-field [label]="languageService.fetchKeyWord(10, language)" formControlName="age"></custom-mat-age-field>
+        <custom-mat-age-field [label]="languageService.fetchKeyWord(10, language)" formControlName="age" [required]="required"></custom-mat-age-field>
     </mat-form-field>
 
     <mat-form-field [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(8, language)}}</mat-label>
-        <custom-mat-occupation-field formControlName="occupation" [language]="language"></custom-mat-occupation-field>
+        <custom-mat-occupation-field formControlName="occupation" [required]="required" [language]="language"></custom-mat-occupation-field>
     </mat-form-field>
 
     <mat-form-field class="cs-2" [appearance]="appearance">
         <mat-label>{{currentAddressLabel}}</mat-label>
-        <custom-mat-address-field formControlName="currentAddress" [label]="currentAddressLabel" [font]="font" [language]="language"></custom-mat-address-field>
+        <custom-mat-address-field formControlName="currentAddress" [required]="required" [label]="currentAddressLabel" [font]="font" [language]="language"></custom-mat-address-field>
     </mat-form-field>
 
     <mat-checkbox [ngClass]="inline ? 'cs-3' : 'cs-2'" color="primary" formControlName="isCurrentAndPermanentAddressSame">{{languageService.fetchKeyWord(35, language)}}</mat-checkbox>
     <mat-form-field *ngIf="!form.value.isCurrentAndPermanentAddressSame"  class="cs-2" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(28, language)}}</mat-label>
-        <custom-mat-address-field formControlName="permanentAddress" [label]="languageService.fetchKeyWord(28, language)" [font]="font" [language]="language"></custom-mat-address-field>
+        <custom-mat-address-field formControlName="permanentAddress" [required]="required" [label]="languageService.fetchKeyWord(28, language)" [font]="font" [language]="language"></custom-mat-address-field>
     </mat-form-field>
 
     <mat-form-field *ngIf="showMobileNumberField" [ngClass]="inline ? 'cs-1' : 'cs-2'" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(37, language)}}</mat-label>
-        <custom-mat-mobile-number-field [showContryCode]="true" [label]="languageService.fetchKeyWord(37, language)" formControlName="mobileNumber"></custom-mat-mobile-number-field>
+        <custom-mat-mobile-number-field [showContryCode]="true" [label]="languageService.fetchKeyWord(37, language)" formControlName="mobileNumber" [required]="required"></custom-mat-mobile-number-field>
     </mat-form-field>
 
     <mat-form-field *ngIf="showAdharNumberField" [ngClass]="inline ? 'cs-1' : 'cs-2'" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(38, language)}}</mat-label>
-        <custom-mat-adhar-number-field formControlName="adharNumber" [label]="languageService.fetchKeyWord(38, language)" [required]="true" [language]="language" [font]="font"></custom-mat-adhar-number-field>
+        <custom-mat-adhar-number-field formControlName="adharNumber" [required]="required" [label]="languageService.fetchKeyWord(38, language)" [language]="language" [font]="font"></custom-mat-adhar-number-field>
         <mat-hint>{{languageService.fetchKeyWord(40, language)}}</mat-hint>
     </mat-form-field>
 
     <mat-form-field *ngIf="showPanNumberField" [ngClass]="inline ? 'cs-1' : 'cs-2'" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(39, language)}}</mat-label>
-        <custom-mat-pan-number-field formControlName="panNumber" [label]="languageService.fetchKeyWord(39, language)" [required]="true" [language]="language"></custom-mat-pan-number-field>
+        <custom-mat-pan-number-field formControlName="panNumber" [required]="required" [label]="languageService.fetchKeyWord(39, language)" [language]="language"></custom-mat-pan-number-field>
         <mat-hint>{{languageService.fetchKeyWord(41, language)}}</mat-hint>
     </mat-form-field>
 
     <mat-form-field *ngIf="showPassportPhoto" [ngClass]="inline ? 'cs-3' : 'cs-2'" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(50, language)}}</mat-label>
-        <custom-mat-image-upload-field formControlName="passportPhoto"></custom-mat-image-upload-field>
+        <custom-mat-image-upload-field formControlName="passportPhoto" [required]="required"></custom-mat-image-upload-field>
     </mat-form-field>
 </fieldset>

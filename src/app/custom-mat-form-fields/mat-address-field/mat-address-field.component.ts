@@ -24,6 +24,23 @@ export class MatAddressField{
   pinCodeSecondHalfInput        = new MatDividedInputConstituent("", 26, InputType.NUMBER, 1, 999, 3);
   pinCodeInput:MatDividedInput  = new MatDividedInput([this.pinCodeFirstHalfInput, this.pinCodeSecondHalfInput], " ");
   pinCode:string      = "";
+   
+  get value():string{
+    return (!this._languageService || "undefined" == typeof this._language || !this._label || !this.selectedVillage || !this.selectedSubDistrict || !this.selectedDistrict || !this.selectedState)
+            ? ""
+              : this.addressLine + ", " 
+                + ((0 < this.landmark.length) ? this.landmark + ", " : "")
+                + this._languageService.fetchKeyWord(this.selectedVillage.keyWordId, this._language) + " "
+                + this._languageService.fetchKeyWord(51, this._language)
+                + this._languageService.fetchKeyWord(this.selectedSubDistrict.keyWordId, this._language) + " "
+                + this._languageService.fetchKeyWord(52, this._language)
+                + this._languageService.fetchKeyWord(this.selectedDistrict.keyWordId, this._language) + " "
+                + this._languageService.fetchKeyWord(16, this._language) + " : "
+                + this._languageService.fetchKeyWord(this.selectedState.keyWordId, this._language)
+                + ", "
+                + this.pinCodeInput.toString()
+                + " ";
+  }
 
   setLabel(label:string):void{
     this._label = label;
@@ -68,7 +85,7 @@ export class MatAddressField{
 })
 export class MatAddressFieldComponent implements MatFormFieldControl<MatAddressField>, ControlValueAccessor, OnInit {
   private static instanceCounter:number = 0;
-  private _value!: MatAddressField;
+  private _value: MatAddressField      = new MatAddressField();
   stateChanges                          = new Subject<void>();
   @HostBinding() id: string             = `custom-mat-address-field-${MatAddressFieldComponent.instanceCounter++}`;
   placeholder: string                   = "";

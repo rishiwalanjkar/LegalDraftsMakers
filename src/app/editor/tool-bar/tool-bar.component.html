@@ -328,10 +328,7 @@
                         [showPanNumberField]="data.showPanNumberField"
                         [showPassportPhoto]="data.showSignatureTable"
                         [required]="true" 
-                        (htmlChange)="data.setHtml(i, $event)" 
-                        (nameChange)="data.setName(i, $event)" 
-                        (addressChange)="data.setAddress(i, $event)" 
-                        (passportPhotoChange)="data.setPassportPhoto(i, $event)" 
+                        (valueChange)="data.setValue(i, $event)" 
                         [(inline)]="data.inline" 
                         [label]="data.getBlockLabel(i)" 
                         [font]="selectedFont" 
@@ -366,9 +363,9 @@
             <tbody>
                 <tr *ngFor="let block of data.getBlocks(signatureTable);let i = index;">
                     <td></td>
-                    <td>{{data.names[i]}}</td>
-                    <td>{{data.addresses[i]}}</td>
-                    <td [innerHTML]="!data.passportPhotos[i] ? '' :data.passportPhotos[i]|safeHtml"></td>
+                    <td>{{data.values[i].name.toString()}}</td>
+                    <td>{{data.values[i].address}}</td>
+                    <td [innerHTML]="!data.values[i].passportPhoto.value ? '' :data.values[i].passportPhoto.toString()|safeHtml"></td>
                     <td></td>
                 </tr>
             </tbody>

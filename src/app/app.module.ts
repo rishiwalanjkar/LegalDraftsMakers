@@ -28,6 +28,7 @@ import { CreateDraftTemplateComponent } from './create-draft-template/create-dra
 
 import { EditorModule } from './editor/editor.module';
 import { SharedModule } from './shared/shared.module';
+import { ViewDraftComponent } from './draft/view-draft/view-draft.component';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import { SharedModule } from './shared/shared.module';
     ExtractWhatsappDocumentsComponent,
     UploadFontsComponent,
     CreateDraftTemplateComponent,
+    ViewDraftComponent,
   ],
   imports: [
     BrowserModule,
@@ -56,7 +58,7 @@ import { SharedModule } from './shared/shared.module';
     MatExpansionModule,
     HttpClientModule,
     EditorModule,
-    SharedModule
+    SharedModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

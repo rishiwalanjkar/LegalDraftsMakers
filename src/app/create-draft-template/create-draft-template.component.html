@@ -1,6 +1,6 @@
 <mat-tab-group>
     <mat-tab label="Editor">
-        <app-editor [config]="editorConfig" (draftChangeEvent)="updateDraft($event)"></app-editor>
+        <app-editor [editorConfig]="editorConfig" [(draft)]="draft"></app-editor>
     </mat-tab>
     <mat-tab label="Create Template">
         <div class="grid c-3 cg-2">
@@ -77,34 +77,38 @@
                                             <div *ngIf="tabData[tab.CHOICE].instance.isField(quickEditFieldFormat.DEPENDENT_FIELD)" class="grid c-4 cg-1 cs-3">
                                                 <mat-form-field [color]="widgetColor" appearance="fill">
                                                     <mat-label>Field Pool</mat-label>
-                                                    <mat-select [(ngModel)]="$any(choiceFieldConfig).dependeeField">
+                                                    <mat-select [(ngModel)]="$any(tabData[tab.CHOICE].instance).dependeeField">
                                                         <mat-option *ngFor="let field of getDependableFields();" [value]="field">{{field.label}}</mat-option>
                                                     </mat-select>
                                                 </mat-form-field>
 
-                                                <mat-form-field *ngIf="!!$any(choiceFieldConfig).dependeeField && !!$any(choiceFieldConfig).dependeeField.getComponentsAsArray().length" [color]="widgetColor" appearance="fill">
-                                                    <mat-label>Field Attribute</mat-label>
-                                                    <mat-select [(ngModel)]="$any(choiceFieldConfig).selectedComponent">
-                                                        <mat-option *ngFor="let component of $any(choiceFieldConfig).dependeeField.getComponentsAsArray();" [value]="component">{{component}}</mat-option>
-                                                    </mat-select>
-                                                </mat-form-field>
+                                                <ng-container *ngIf="!!$any(tabData[tab.CHOICE].instance).dependeeField">
 
-                                                <mat-form-field *ngIf="!!$any(choiceFieldConfig).dependeeField && !!$any(choiceFieldConfig).dependeeField.getDependableConditions($any(choiceFieldConfig).selectedComponent).length" [color]="widgetColor" appearance="fill">
-                                                    <mat-label>Conditions</mat-label>
-                                                    <mat-select [(ngModel)]="$any(choiceFieldConfig).selectedCondition">
-                                                        <mat-option *ngFor="let condition of $any(choiceFieldConfig).dependeeField.getDependableConditions($any(choiceFieldConfig).selectedComponent);" [value]="condition">{{condition}}</mat-option>
-                                                    </mat-select>
-                                                </mat-form-field>
-
-                                                <mat-form-field *ngIf="!!$any(choiceFieldConfig).dependeeField" [color]="widgetColor" appearance="fill">
-                                                    <mat-label>Field Pool</mat-label>
-                                                    
-                                                    <mat-select *ngIf="!!$any(choiceFieldConfig).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent).length" [(ngModel)]="$any(choiceFieldConfig).comparabelValue">
-                                                        <mat-option *ngFor="let comparabelValue of $any(choiceFieldConfig).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent);" [value]="comparabelValue">{{comparabelValue}}</mat-option>
-                                                    </mat-select>
-
-                                                    <input matInput *ngIf="!$any(choiceFieldConfig).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent).length" [(ngModel)]="$any(choiceFieldConfig).comparabelValue">
-                                                </mat-form-field>
+                                                    <mat-form-field *ngIf="!!$any(tabData[tab.CHOICE].instance).dependeeField.getComponentsAsArray().length" [color]="widgetColor" appearance="fill">
+                                                        <mat-label>Field Attribute</mat-label>
+                                                        <mat-select [(ngModel)]="$any(choiceFieldConfig).selectedComponent">
+                                                            <mat-option *ngFor="let component of $any(tabData[tab.CHOICE].instance).dependeeField.getComponentsAsArray();" [value]="component">{{component}}</mat-option>
+                                                        </mat-select>
+                                                    </mat-form-field>
+    
+                                                    <mat-form-field *ngIf="!!$any(tabData[tab.CHOICE].instance).dependeeField.getDependableConditions($any(choiceFieldConfig).selectedComponent).length" [color]="widgetColor" appearance="fill">
+                                                        <mat-label>Conditions</mat-label>
+                                                        <mat-select [(ngModel)]="$any(choiceFieldConfig).selectedCondition">
+                                                            <mat-option *ngFor="let condition of $any(tabData[tab.CHOICE].instance).dependeeField.getDependableConditions($any(choiceFieldConfig).selectedComponent);" [value]="condition">{{condition}}</mat-option>
+                                                        </mat-select>
+                                                    </mat-form-field>
+    
+                                                    <mat-form-field *ngIf="!!$any(tabData[tab.CHOICE].instance).dependeeField.getDependableConditions($any(choiceFieldConfig).selectedComponent).length" [color]="widgetColor" appearance="fill">
+                                                        <mat-label>Field Pool</mat-label>
+                                                        
+                                                        <mat-select *ngIf="!!$any(tabData[tab.CHOICE].instance).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent).length" [(ngModel)]="$any(choiceFieldConfig).comparableValue">
+                                                            <mat-option *ngFor="let comparableValue of $any(tabData[tab.CHOICE].instance).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent);" [value]="comparableValue">{{comparableValue}}</mat-option>
+                                                        </mat-select>
+    
+                                                        <input matInput *ngIf="!$any(tabData[tab.CHOICE].instance).dependeeField.getDependableComparableValues($any(choiceFieldConfig).selectedComponent).length" [(ngModel)]="$any(choiceFieldConfig).comparableValue">
+                                                    </mat-form-field>
+    
+                                                </ng-container>
                                             </div>
                                         </div>
 
@@ -160,30 +164,35 @@
                                             <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).showPanNumberField">Pan Number</mat-checkbox>
                                         </div>
 
+                                        <mat-form-field *ngIf="tabData[tab.BLOCK].instance.isField(quickEditFieldFormat.PERSONAL_INFORMATION_FIELD) && !$any(tabData[tab.BLOCK].instance).inline" [style.width]="'100%'" [color]="widgetColor" appearance="fill">
+                                            <mat-label>Block Caption</mat-label>
+                                            <input matInput placeholder="Enter caption here..." [(ngModel)]="$any(tabData[tab.BLOCK].instance).blockCaption" [required]="true" #blockCaption (keydown)="fontService.convertChar($event, blockCaption, selectedFont)">
+                                        </mat-form-field>
+
                                         <div *ngIf="tabData[tab.BLOCK].instance.isField(quickEditFieldFormat.PERSONAL_INFORMATION_FIELD) && $any(tabData[tab.BLOCK].instance).hasSignatureTable" class="grid c-3 cg-2 h-al v-ac">
                                             <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).signatureTableHasNameColumn">
                                                 <mat-form-field appearance="fill">
                                                     <mat-label>Name Column Number</mat-label>
-                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).nameColumnNumbar" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasNameColumn" type="number">
+                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).nameColumnNumber" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasNameColumn" type="number">
                                                 </mat-form-field>
                                             </mat-checkbox>
                                             <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).signatureTableHasAddressColumn">
                                                 <mat-form-field appearance="fill">
                                                     <mat-label>Address Column Number</mat-label>
-                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).addressColumnNumbar" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasAddressColumn" type="number">
+                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).addressColumnNumber" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasAddressColumn" type="number">
                                                 </mat-form-field>
                                             </mat-checkbox>
                                             <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).signatureTableHasPhotoColumn">
                                                 <mat-form-field appearance="fill">
                                                     <mat-label>Photo Column Number</mat-label>
-                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).photoColumnNumbar" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasPhotoColumn" type="number">
+                                                    <input matInput [(ngModel)]="$any(tabData[tab.BLOCK].instance).photoColumnNumber" [disabled]="!$any(tabData[tab.BLOCK].instance).signatureTableHasPhotoColumn" type="number">
                                                 </mat-form-field>
                                             </mat-checkbox>
                                         </div>
 
                                         <div *ngIf="tabData[tab.BLOCK].instance.isField(quickEditFieldFormat.TABLE_FIELD)" class="grid c-6">
                                             <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).autoSerializable">Auto Serializable</mat-checkbox>
-                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).header">Header</mat-checkbox>
+                                            <mat-checkbox [color]="widgetColor" [(ngModel)]="$any(tabData[tab.BLOCK].instance).hasHeader">Header</mat-checkbox>
                                             
                                             <table *ngIf="$any(tabData[tab.BLOCK].instance).header" class="border" [ngClass]="$any(tabData[tab.BLOCK].instance).autoSerializable ? 'auto-serialize' : ''">
                                                 <thead [innerHTML]="$any(tabData[tab.BLOCK].instance).tableHead|safeHtml"></thead>
@@ -207,7 +216,7 @@
                     </mat-card-actions>
                 </mat-card>
             
-                <div class="grid c-1 rg-1" [innerHTML]="latestDraft.innerHTML|safeHtml"></div>
+                <app-view-draft [draft]="draft"></app-view-draft>
             </div>
 
             <mat-card>

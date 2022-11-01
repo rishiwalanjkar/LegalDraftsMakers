@@ -8,6 +8,10 @@ export class MatMobileNumberField{
   private _label!:string;
   mobileNumber!:number;
 
+  get value():string{
+    return !!this.mobileNumber ? this.mobileNumber.toString() : "";
+  }
+
   setLabel(label:string):void{
     this._label = label;
   }

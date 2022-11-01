@@ -39,6 +39,10 @@ export class MatImageUploadField{
   imageHTML!:HTMLDivElement;
 
   constructor(public imageType:ImageType){}
+  
+  get value():string{
+    return !!this.imageHTML ? this.imageHTML.outerHTML : "";
+  }
 
   get width():string{
     return IMAGE_SIZE[this.imageType][0] + "mm";

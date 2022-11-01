@@ -16,16 +16,16 @@ export class MatNameField{
   lastNameInput:MatDividedInputConstituent    = new MatDividedInputConstituent("", 44, InputType.TEXT, 2, 20, 12);
   nameInput:MatDividedInput                   = new MatDividedInput([this.firstNameInput, this.middleNameInput, this.lastNameInput], " ");
 
+  get value():string{
+    return !this.nameInput.toString().trim().length ? "" : (this.selectedTitle + " " + this.nameInput.toString());
+  }
+
   toString():string{
     return !this.nameInput.toString().trim().length ? "" : (this.selectedTitle + " " + this.nameInput.toString() + " ");
   }
 
   isEmpty():boolean{
     return 0 == this.selectedTitle.length && this.nameInput.isEmpty();
-  }
-
-  get errorState():boolean{
-    return this.nameInput.errorState;
   }
 }
 
@@ -109,7 +109,7 @@ export class MatNameFieldComponent implements MatFormFieldControl<MatNameField>,
   }
 
   get errorState():boolean{
-    return this.touched && this.value.errorState;
+    return this.touched && this.parts.controls['name'].invalid;
   }
 
   setDescribedByIds(ids: string[]): void {

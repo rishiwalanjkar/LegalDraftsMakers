@@ -1,9 +1,9 @@
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@200;300&display=swap"/>
-<app-tool-bar [config]="config" [color]="color"></app-tool-bar>
+<app-tool-bar [config]="editorConfig" [color]="color"></app-tool-bar>
 <div class="editable-section">
     <div class="page-container" [formGroup]="pageGroup">
-        <mat-form-field class="page" appearance="fill" [color]="color" formArrayName="pages" *ngFor="let page of pages.controls;let i = index;" >
+        <mat-form-field class="page" appearance="fill" [color]="color" formArrayName="pageControlArray" *ngFor="let page of pageControls;let i = index;" >
             <mat-label *ngIf="!page.value.isShowPageNumber">Page {{i+1}}</mat-label>
             <app-page formControlName="{{i}}" [focused]="true" placeholder="'Start typing here...'" pageDemarcation></app-page>
         </mat-form-field>

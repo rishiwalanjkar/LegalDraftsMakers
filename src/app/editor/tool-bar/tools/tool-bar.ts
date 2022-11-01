@@ -2,9 +2,10 @@ import { TemplateRef } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { ImageType, MatImageUploadField } from "src/app/custom-mat-form-fields/mat-image-upload-field/mat-image-upload-field.component";
 import { LanguageService } from "src/app/language/language.service";
+import { PersonalInformation } from "src/app/personal-info-block/personal-info-block.component";
 import { EditorConfig } from "../../editor.component";
 import { EditorService } from "../../editor.service";
-import { Page, PageDefaults, PageNumberAlignment, PageNumberType } from "../../page/page/page";
+import { Page, PageDefaults, PageNumberAlignment, PageNumberType, PageSizeMM } from "../../page/page/page";
 
 export enum Conversion{
     MM_TO_PIXEL_FACTOR = 3.7795275591,
@@ -1007,10 +1008,15 @@ export class ToolFactory{
                 break;
             
             case ToolCommand.PAGE_SIZE:
-                let pageSize:SelectTool = new SelectTool(option);
+                let pageSize:SelectTool             = new SelectTool(option),
+                    pageSizeOptions:SelectOption[]  = new Array();
+
                 pageSize.setToolTip("Set page size");
-                pageSize.setOptions([new SelectOption("A4", "[210, 297]"),
-                                        new SelectOption("Legal", "[216, 356]")]);
+
+                for(const pageSize of Object.keys(PageSizeMM))
+                    pageSizeOptions.push(new SelectOption(pageSize, JSON.stringify(PageSizeMM[pageSize])));
+
+                pageSize.setOptions(pageSizeOptions);
                 pageSize.setLabel("Page Size");
                 pageSize.setToolGroup(ToolGroup.LAYOUT);
                 
@@ -1252,10 +1258,7 @@ export class ToolFactory{
                     showPanNumberField              : false,
                     showSignatureTable              : false,
                     inline                          : false,
-                    htmlBlocks                      : new Object(),
-                    names                           : new Object(),
-                    addresses                       : new Object(),
-                    passportPhotos                  : new Object(),
+                    values                          : new Object(),
                     signatureTable                  : new Object(),
                     getBlocks                       : (tableElement?:HTMLTableElement) => {
                                                         if(!!tableElement)
@@ -1263,10 +1266,7 @@ export class ToolFactory{
                                                         
                                                         return new Array(personalInfo.getData().blockCount)
                                                     },
-                    setHtml                         : (blockIndex:number, documentFragment:DocumentFragment) => personalInfo.getData().htmlBlocks = {...personalInfo.getData().htmlBlocks, ...{[blockIndex]:documentFragment}},
-                    setName                         : (blockIndex:number, name:string) => personalInfo.getData().names = {...personalInfo.getData().names, ...{[blockIndex]:name}},
-                    setAddress                      : (blockIndex:number, address:string) => personalInfo.getData().addresses = {...personalInfo.getData().addresses, ...{[blockIndex]:address}},
-                    setPassportPhoto                : (blockIndex:number, passportPhoto:string) => personalInfo.getData().passportPhotos = {...personalInfo.getData().passportPhotos, ...{[blockIndex]:passportPhoto}},
+                    setValue                        : (blockIndex:number, value:PersonalInformation) => personalInfo.getData().values = {...personalInfo.getData().values, ...{[blockIndex]:value}},
                     getBlockLabel                   : (blockIndex:number) => personalInfo.getData().blockCaption + (1 == personalInfo.getData().blockCount ? "" : " " + (blockIndex + 1))
                 });
 

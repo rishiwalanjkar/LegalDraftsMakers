@@ -4,4 +4,8 @@ fieldset{
     border-color: $transparent-color;
     padding: 30px;
     border-radius: 5px;
+
+    legend{
+        padding: 0px 10px;
+    }
 }

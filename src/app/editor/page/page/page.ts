@@ -18,22 +18,33 @@ export enum PageNumberAlignment{
     RIGHT   = "flex-end"
 }
 
-export class Page{
-    private _size:[number, number]                  = [PageDefaults.WIDTH, PageDefaults.HEIGHT];
+export type PageSizeMMType = {[key:string]:number[]};
 
-    private _rightPadding:number                    = PageDefaults.PADDING;
-    private _leftPadding:number                     = PageDefaults.PADDING;
+export const PageSizeMM:PageSizeMMType = {
+                                            "A4"    : [210, 297],
+                                            "A5"    : [148, 210],
+                                            "A6"    : [105, 148],
+                                            "Legal" : [216, 356],
+                                            "4*6"   : [101.6, 152.4],
+                                            "5*7"   : [127, 178]
+                                        };
+
+export class Page{
+    private _size:[number, number]                          = [PageDefaults.WIDTH, PageDefaults.HEIGHT];
+
+    private _rightPadding:number                            = PageDefaults.PADDING;
+    private _leftPadding:number                             = PageDefaults.PADDING;
     private _contentWidth!:number;
 
-    private _headerHeight:number                    = PageDefaults.PADDING;
-    private _footerHeight:number                    = PageDefaults.PADDING;
+    private _headerHeight:number                            = PageDefaults.PADDING;
+    private _footerHeight:number                            = PageDefaults.PADDING;
     private _bodyHeight!:number;
 
-    private _body:string                            = "";
+    private _body:string                                    = "";
     private _pageNumber!:number;
 
-    private static _showHeaderPageNumber            = false;
-    private static _showFooterPageNumber            = false;
+    private static _showHeaderPageNumber                    = false;
+    private static _showFooterPageNumber                    = false;
     private static _pageNumberAlignment:PageNumberAlignment = PageNumberAlignment.RIGHT;         
 
     constructor(){

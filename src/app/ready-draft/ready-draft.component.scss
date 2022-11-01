@@ -1,0 +1,67 @@
+:host{
+    min-height: inherit;
+    width: 100%;
+
+    mat-stepper.drafting-stepper{
+        min-height: inherit;
+        width: 100%;
+        background-color: transparent;
+    }
+
+    div.content-pane{
+        min-height: calc(100vh - 164px);
+        margin: auto;
+        width: 80%;
+
+        div.initial-search-box{
+            height: 100%;
+            width: 60%;
+        }
+
+        div.search-result{
+            width: 100%;
+            margin: auto;
+    
+            table{
+                width: 100%;
+            }
+        }
+
+        mat-stepper.fill-details{
+            mat-form-field, mat-radio-group, div.personal-info-block, table{
+                width: 100%;
+            }
+
+            mat-radio-group, table{
+                margin-bottom: 20px;
+            }
+            
+            table{
+                tr td{
+                    padding-right : 10px;
+                }
+            }
+        }
+    }
+
+    mat-chip-list{
+        height: inherit;
+        mat-chip{
+            cursor: pointer;
+        }
+    }
+
+    .mat-row .mat-cell {
+        border-top: 1px solid transparent;
+        cursor: pointer;
+    }
+      
+    .mat-row:hover .mat-cell {
+        border-color: currentColor;
+    }
+    
+    .row-is-clicked {
+        font-weight: bold;
+        background-color: #034F84;
+    }
+}

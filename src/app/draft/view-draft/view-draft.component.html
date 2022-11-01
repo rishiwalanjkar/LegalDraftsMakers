@@ -1,0 +1,15 @@
+<ng-container  *ngIf="!!draft">
+    <div class="mat-elevation-z8 grid page" *ngFor="let page of draft.pages" [style.width.mm]="page.width" [style.gridTemplateColumns]="page.leftPadding +'mm' + ' auto ' + page.rightPadding + 'mm'">
+        <div class="left" [style.height.mm]="page.height"></div>
+        <div class="content" [style.height.mm]="page.height" [style.width.mm]="page.contentWidth">
+            <div class="header" [style.height.mm]="page.headerHeight" [style.alignItems]="page.pageNumberAlignment">
+                <span *ngIf="page.isShowHeaderPageNumber">{{page.pageNumber}}</span>
+            </div>
+            <div class="body" [style.height.mm]="page.bodyHeight" [style.fontFamily]="page.fontFamily" [style.fontSize]="page.fontSize" [innerHTML]="page.body|safeHtml"></div>
+            <div class="footer" [style.height.mm]="page.footerHeight" [style.alignItems]="page.pageNumberAlignment">
+                <span *ngIf="page.isShowFooterPageNumber">{{page.pageNumber}}</span>
+            </div>
+        </div>
+        <div class="right" [style.height.mm]="page.height"></div>
+    </div>
+</ng-container>

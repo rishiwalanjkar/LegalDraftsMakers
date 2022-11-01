@@ -11,6 +11,26 @@ body {
     left: -45px;
 }
 
+snack-bar-container.error{
+    background-color: #F7CAC9;
+    color: #DD4132;
+}
+
+snack-bar-container.warn{
+    background-color: #FFFACD;
+    color: #D5AE41;
+}
+
+snack-bar-container.success{
+    background-color: #A0DAA9;
+    color: #006B54;
+}
+
+snack-bar-container.info{
+    background-color: #95DEE3;
+    color: #004B8D;
+}
+
 mat-grid-list.insert-table-dialog, mat-grid-list.insert-page-number-dialog{
     mat-grid-tile{
         div.mat-grid-tile-content{
@@ -50,6 +70,12 @@ table.border{
         border-collapse:collapse;
         vertical-align:top;
         padding:5px;
+    }
+}
+
+table.center{
+    tr th, tbody tr th, thead tr th, tr td, tbody tr td, thead tr td{
+        text-align: center;
     }
 }
 

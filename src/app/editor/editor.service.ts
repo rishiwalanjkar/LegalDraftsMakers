@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
+import { PersonalInformationComponents } from '../create-draft-template/create-draft-template.component';
 import { ImageType } from '../custom-mat-form-fields/mat-image-upload-field/mat-image-upload-field.component';
 import { FontService } from '../font/font.service';
 import { Page } from './page/page/page';
@@ -15,8 +16,8 @@ export class EditorService {
   private _pageSizeSubject           = new Subject<number[]>();
   private _pageMarginSubject         = new Subject<any>();
   private _triggerToolSubject        = new Subject<ToolCommand>();
-  private _pageChangeSubject         = new Subject<HTMLDivElement>();
-  private _pageViewUpdateSubject     = new Subject<void>();
+  private _draftChangeSubject        = new Subject<void>();
+  private _pageViewChangeSubject     = new Subject<void>();
   private _pageSelection!:Selection;
   private _pageSelectionRange!:Range;
 
@@ -675,7 +676,7 @@ export class EditorService {
         window.getSelection()?.addRange(this._pageSelectionRange);
 
         let personalInfoBlock:HTMLElement     = document.createElement("personal-information"),
-            numberOfPersons:Number            = Object.keys(data.htmlBlocks).length,
+            numberOfPersons:Number            = Object.keys(data.values).length,
             inline:boolean                    = data.inline,
             olElement:HTMLOListElement,
             liElement:HTMLLIElement;
@@ -694,10 +695,10 @@ export class EditorService {
               liElement.append((i + 1).toString() + ". ");
             }
 
-            liElement.appendChild(data.htmlBlocks[i]);
+            liElement.appendChild(data.values[i].html({[PersonalInformationComponents.PERSONAL_INFORMATION]:true}));
             olElement!.appendChild(liElement);
           } else {
-            personalInfoBlock.appendChild(data.htmlBlocks[i]);
+            personalInfoBlock.appendChild(data.values[i].html({[PersonalInformationComponents.PERSONAL_INFORMATION]:true}));
           }
         }
 
@@ -727,7 +728,7 @@ export class EditorService {
         }
 
         let toltalPersonalInfoElementsCount = document.getElementsByTagName(personalInfoBlock.tagName).length;
-        personalInfoBlock.id = personalInfoBlock.tagName.toLowerCase() + "-" + (!!toltalPersonalInfoElementsCount ? toltalPersonalInfoElementsCount : 0);
+        personalInfoBlock.id                = personalInfoBlock.tagName.toLowerCase() + "-" + (!!toltalPersonalInfoElementsCount ? toltalPersonalInfoElementsCount : 0);
 
         document.execCommand("insertHTML", true, personalInfoBlock.outerHTML + "</br></br>");
 
@@ -741,7 +742,7 @@ export class EditorService {
     if(!!selectedElement?.focus)
       selectedElement?.focus();
 
-    this._pageViewUpdateSubject.next();
+    this._pageViewChangeSubject.next();
   }
 
   updateToolView():void{
@@ -858,13 +859,13 @@ export class EditorService {
 
     for(let pageIndex=0; pageIndex<PageComponent.instanceCounter;pageIndex++){
       if(!document.getElementById(`app-page-${pageIndex}`)) return;
- 
+
       allPageBodyElements.push(document.getElementById(`app-page-${pageIndex}`)!.children[1]!.children[1] as HTMLElement);
     }
 
     this.redressPartialPages(allPageBodyElements, activePageIndex, allowedBodyHeightInPixel);
     this.mitigateOverflownPages(allPageBodyElements, activePageIndex, allowedBodyHeightInPixel);
-    this.emitPageChange();
+    this.emitPages();
   }
 
   redressPartialPages(allPageBodyElements:HTMLElement[], activePageIndex:number, allowedHeightInPixel:number):void{
@@ -966,46 +967,15 @@ export class EditorService {
     this._pageSelection.addRange(range);
   }
 
-  emitPageChange():void{
-    let pagesWrapper:HTMLDivElement = document.createElement("div");
-
-    for(let pageIndex=0; pageIndex<PageComponent.instanceCounter;pageIndex++){
-      let clone:HTMLElement           = document.getElementById(`app-page-${pageIndex}`)?.cloneNode(true) as HTMLElement;
-
-      if(!clone) continue;
-
-      clone.style.border                                                = "1px dashed currentColor";
-      (clone.children[0] as HTMLDivElement).style.border                = "none";
-
-      (clone.children[1] as HTMLDivElement).style.border                = "none";
-      (clone.children[1].firstChild as HTMLDivElement).style.border     = "none";
-      (clone.children[1].lastChild as HTMLDivElement).style.border      = "none";
-
-      (clone.children[2] as HTMLDivElement).style.border                = "none";
-
-      (clone.children[1].children[0] as HTMLDivElement).contentEditable = "false";
-      (clone.children[1].children[1] as HTMLDivElement).contentEditable = "false";
-      (clone.children[1].children[2] as HTMLDivElement).contentEditable = "false";
-      clone.style.display             = "grid";
-      clone.id                        = "view-" + clone.id;
-
-      pagesWrapper.append(clone);
-    } 
-
-    pagesWrapper.style.display        = "flex";
-    pagesWrapper.style.flexDirection  = "column";
-    pagesWrapper.style.justifyContent = "center";
-    pagesWrapper.style.margin         = "0px";
-    pagesWrapper.style.padding        = "0px";
-
-    this._pageChangeSubject.next(pagesWrapper);
+  emitPages():void{
+    this._draftChangeSubject.next();
   }
 
-  onPageChange():Observable<HTMLDivElement>{
-    return this._pageChangeSubject.asObservable();
+  onDraftChange():Observable<void>{
+    return this._draftChangeSubject.asObservable();
   }
 
-  onPageViewUpdate():Observable<void>{
-    return this._pageViewUpdateSubject.asObservable();
+  onPageViewChange():Observable<void>{
+    return this._pageViewChangeSubject.asObservable();
   }
 }

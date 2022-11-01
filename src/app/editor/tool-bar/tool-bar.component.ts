@@ -84,7 +84,7 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
   colorPalette                      = ColorPalette;
   imageType                         = ImageType;
 
-  constructor(private cdr: ChangeDetectorRef, 
+  constructor(private _changeDetectorRef: ChangeDetectorRef, 
     private _editorService:EditorService, 
     public fontService:FontService,
     public languageService:LanguageService) {
@@ -104,7 +104,7 @@ export class ToolBarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {    
     this.setSelectOrDialogToolContents();
-    this.cdr.detectChanges();
+    this._changeDetectorRef.detectChanges();
   }
 
   setSelectOrDialogToolContents(){

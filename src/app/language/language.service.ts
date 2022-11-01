@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { Account } from '../dashboard/dashboard.component';
 
 export enum Language{
-  ENGLISH,
-  MARATHI,
-  HINDI
+  ENGLISH = "English",
+  MARATHI = "मराठी",
+  HINDI   = "हिंदी"
 }
 
 type KeyWord = {
@@ -16,6 +16,7 @@ type KeyWord = {
 })
 export class LanguageService {
   private _keyWords!:KeyWord;
+  private _monthKewordIds:{[key:number]:number} = {1:76, 2:77, 3:78, 4:79, 5:80, 6:81, 7:82, 8:83, 9:84, 10:85, 11:86, 12:87}
 
   constructor() {}
 
@@ -85,6 +86,29 @@ export class LanguageService {
                             62 : "Address",
                             63 : "Photo",
                             64 : "Signature/Thumb",
+                            65 : "Affidavit",
+                            66 : "Consent Letter",
+                            67 : "Indemnity Bond",
+                            68 : "Agreement",
+                            69 : "Sale Deed",
+                            70 : "Gift Deed",
+                            71 : "Release Deed",
+                            72 : "Power of Attorney",
+                            73 : "Language",
+                            74 : "Document Type",
+                            75 : "",
+                            76 : "January",
+                            77 : "February",
+                            78 : "March",
+                            79 : "April",
+                            80 : "May",
+                            81 : "Jun",
+                            82 : "July",
+                            83 : "August",
+                            84 : "September",
+                            85 : "October",
+                            86 : "November",
+                            87 : "December",
                           },
       [Language.MARATHI] : {1 :"नोकरी",
                             2 : "शेती",
@@ -150,6 +174,29 @@ export class LanguageService {
                             62 : "पत्ता",
                             63 : "फोटो",
                             64 : "सही/अंगठा",
+                            65 : "प्रतिज्ञापत्र",
+                            66 : "संमतीपत्र",
+                            67 : "हमीपत्र",
+                            68 : "करार",
+                            69 : "खरेदीखत ",
+                            70 : "बक्षीसपत्र",
+                            71 : "हक्कसोडपत्र",
+                            72 : "कुलमुखत्यारपत्र",
+                            73 : "भाषा",
+                            74 : "दस्त प्रकार",
+                            75 : "",
+                            76 : "जानेवारी",
+                            77 : "फेब्रुवारी",
+                            78 : "मार्च",
+                            79 : "एप्रिल",
+                            80 : "मे",
+                            81 : "जून",
+                            82 : "जुलै",
+                            83 : "ऑगस्ट",
+                            84 : "सप्टेंबर",
+                            85 : "ऑक्टोबर",
+                            86 : "नोव्हेंबर",
+                            87 : "डिसेंबर",
                           },
       [Language.HINDI]    : {1 :"नोकरी",
                               2 : "शेती",
@@ -215,6 +262,29 @@ export class LanguageService {
                               62 : "पता",
                               63 : "फोटो",
                               64 : "हस्ताक्षर/अँगूठा",
+                              65 : "प्रतिज्ञापत्र",
+                              66 : "संमतीपत्र",
+                              67 : "हमीपत्र",
+                              68 : "करार",
+                              69 : "खरेदीखत ",
+                              70 : "बक्षीसपत्र",
+                              71 : "हक्कसोडपत्र",
+                              72 : "कुलमुखत्यारपत्र",
+                              73 : "भाषा",
+                              74 : "दस्त प्रकार",
+                              75 : "",
+                              76 : "जनवरी",
+                              77 : "फ़रवरी",
+                              78 : "मार्च",
+                              79 : "अप्रैल",
+                              80 : "मई",
+                              81 : "जून",
+                              82 : "जुलाई",
+                              83 : "अगस्त",
+                              84 : "सितंबर",
+                              85 : "अक्टूबर",
+                              86 : "नवंबर",
+                              87 : "दिसंबर",
                             }
     }
 
@@ -226,5 +296,18 @@ export class LanguageService {
       language = Account.instance.language;
 
     return this.keyWords[language][keyWordId];
+  }
+
+  fetchMonthName(month:number|string, language?:Language):string {
+    if("undefined" == typeof language)
+      language = Account.instance.language;
+
+    month = "string" == typeof month ? parseInt(month) : month;
+
+    return this.keyWords[language][this._monthKewordIds[month]];
+  }
+
+  fetchLanguages():string[]{
+    return Object.values(Language);
   }
 }

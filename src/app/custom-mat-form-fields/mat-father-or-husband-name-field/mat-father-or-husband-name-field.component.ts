@@ -24,6 +24,10 @@ export class MatFatherOrHusbandNameField{
   get relationKeywordIds():number[]{
     return this.isFather ? this._relationKeywordIds.slice(0, 1) : this._relationKeywordIds;
   }
+  
+  get value():string{
+    return this.selectedTitle + " " + this.nameInput.toString();
+  }
 
   setPrefix(prefix:string):void{
     this._prefix = prefix;
@@ -39,10 +43,6 @@ export class MatFatherOrHusbandNameField{
 
   isEmpty():boolean{
     return 0 == this.selectedTitle.length && this.nameInput.isEmpty();
-  }
-
-  get errorState():boolean{
-    return this.nameInput.errorState;
   }
 }
 
@@ -128,7 +128,7 @@ export class MatFatherOrHusbandNameFieldComponent implements MatFormFieldControl
   }
 
   get errorState():boolean{
-    return this.touched && this.value.errorState;
+    return this.touched && this.parts.controls['name'].invalid;
   }
 
   setDescribedByIds(ids: string[]): void {

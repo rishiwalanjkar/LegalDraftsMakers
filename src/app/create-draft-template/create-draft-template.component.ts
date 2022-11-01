@@ -1,7 +1,10 @@
 import { Plural } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
+import { InputType, MatDividedInput, MatDividedInputConstituent } from '../custom-mat-form-fields/mat-divided-input/mat-divided-input.component';
 import { ImageType } from '../custom-mat-form-fields/mat-image-upload-field/mat-image-upload-field.component';
+import { Occupation, OccupationService } from '../custom-mat-form-fields/mat-occupation-field/occupation.service';
+import { Draft } from '../draft/draft.service';
 import { EditorConfig } from '../editor/editor.component';
 import { BlockToolGroup, FileToolGroup, HomeToolGroup, LayoutToolGroup, SelectTool, TableToolGroup, Tool, ToolCommand, ToolGroup } from '../editor/tool-bar/tools/tool-bar';
 import { Font, FontService } from '../font/font.service';
@@ -42,7 +45,7 @@ export enum PersonalInformationComponents{
   PERSONAL_INFORMATION  = "Personal Information", 
   Name                  = "Name", 
   AGE                   = "Age", 
-  OCCUPANCY             = "Occupancy", 
+  OCCUPATION            = "Occupation", 
   ADDRESS               = "Address", 
   MOBILE_NUMBER         = "Mobile Number", 
   ADHAR_NUMBER          = "Adhar Number", 
@@ -77,7 +80,7 @@ export enum Existance{
 
 export enum PersonalInformationValues{
   SINGULAR    = "Singular",
-  Plural      = "Plural"
+  PLURAL      = "Plural"
 }
 
 enum InputFieldFormat{
@@ -120,8 +123,7 @@ interface ChoiceFieldConfig{
   output ?: string
 }
 
-interface DependentFieldConfig extends ChoiceFieldConfig{
-  dependeeField : QuickEditField|undefined;
+export interface DependentFieldConfig extends ChoiceFieldConfig{
   selectedComponent?:string|undefined;
   selectedCondition?:string|undefined;
   comparableValue:string;
@@ -136,6 +138,7 @@ abstract class QuickEditField{
   private static quickEditTagCounter                = 0;
   private static _languagueService:LanguageService;
   private static _languague:Language;
+  private static _occupationService:OccupationService;
   private _label!:string;
   private _quickEditTag!:HTMLElement|undefined;
   public markedTag!:HTMLElement|undefined;
@@ -165,6 +168,11 @@ abstract class QuickEditField{
   get language():Language{
     return QuickEditField._languague;
   }
+
+  get occupationService():OccupationService{
+    return QuickEditField._occupationService;
+  }
+
 
   isField(fieldFormat:QuickEditFieldFormat):boolean{
     switch(fieldFormat){
@@ -230,9 +238,11 @@ abstract class QuickEditField{
   }
 
   repeat(){
+    let repeatForId:string = this._quickEditTag!.id.toString();
+
     if(this.insert()) {
       this._quickEditTag  = document.getElementById("quick-edit-" + QuickEditField.quickEditTagCounter) as HTMLElement;
-      this._quickEditTag.setAttribute("for", this._quickEditTag.id.toString());
+      this._quickEditTag.setAttribute("for", repeatForId);
       this._quickEditTag.setAttribute("data-instance-type", QuickEditTagInstanceType.REPEAT.toString());
       this._quickEditTag.style.color  = this._quickEditRepeatTagColor;
       this._quickEditTag.setAttribute("data-components", JSON.stringify(this.components));
@@ -309,6 +319,10 @@ abstract class QuickEditField{
 
   static setLanguage(language:Language):void{
     QuickEditField._languague = language;
+  }
+
+  static setOccupationService(occupationService:OccupationService):void{
+    QuickEditField._occupationService = occupationService;
   }
 }
 
@@ -442,7 +456,7 @@ class DividedInputField extends InputField{
   
   override get components():Object{
     if(!this._components) {
-      this._components = Array.from(new Array(this.parts), (_, index) => "Part " + (index + 1)).concat([DividedInputComponents.AGGREGATE]).reduce((accumulator, value) => {
+      this._components = Array.from(new Array(this.parts), (_, index) => (index + 1).toString()).concat([DividedInputComponents.AGGREGATE]).reduce((accumulator, value) => {
                                                                                                                         return {...accumulator, [value]: true};
                                                                                                                       }, {});
       this._components = new Proxy(this._components, {
@@ -497,14 +511,20 @@ class DividedInputField extends InputField{
   }
 
   prepareSpecificTagAttributes(): void {
+    super.prepareGeneralTagAttributes();
     this.quickEditTag.setAttribute("data-format", QuickEditFieldFormat.DIVIDED_INPUT_FIELD.toString());
-    this.quickEditTag.setAttribute("data-parts", this.parts.toString());
-    this.quickEditTag.setAttribute("data-separator", this.separator);
+
+    let dividedInput, dividedInputConstituents  = [];
 
     for(let i = 0; i < this._inputFieldConfigs.length; i++) {
-      this.quickEditTag.setAttribute("data-type-" + i, this._inputFieldConfigs[i].type);
-      this.quickEditTag.setAttribute("data-max-length-" + i, this._inputFieldConfigs[i].maxLength.toString());
+      let inputType = this._inputFieldConfigs[i].type == InputFieldType.TEXT ? InputType.TEXT : InputType.NUMBER,
+          max       = this._inputFieldConfigs[i].type == InputFieldType.TEXT ? this._inputFieldConfigs[i].maxLength : Math.pow(10, this._inputFieldConfigs[i].maxLength) - 1;
+
+      dividedInputConstituents.push(new MatDividedInputConstituent("", 75, inputType, 0, max, this._inputFieldConfigs[i].maxLength));
     }
+
+    dividedInput = new MatDividedInput(dividedInputConstituents, this.separator)
+    this.quickEditTag.setAttribute("data-divided-input", JSON.stringify(dividedInput));
   }
 }
 
@@ -569,10 +589,7 @@ abstract class ChoiceField extends QuickEditField{
   }
 
   prepareSpecificTagAttributes(): void {
-    for(let i = 0; i < this._choiceFieldConfigs.length; i++) {
-      this.quickEditTag.setAttribute("data-option-" + i, this._choiceFieldConfigs[i].option);
-      this.quickEditTag.setAttribute("data-output-" + i, this._choiceFieldConfigs[i].output as string);
-    }
+    this.quickEditTag.setAttribute("data-options", JSON.stringify(this._choiceFieldConfigs));
   }
 
   getSupportedFieldFormats():FieldFormat[]{
@@ -641,7 +658,8 @@ class ListChoiceField extends ChoiceField{
 
 class DependentChoiceField extends ChoiceField{
   private static _instance:DependentChoiceField;
-  protected override _defaultChoiceFieldConfig:DependentFieldConfig = {option:"", dependeeField:undefined, selectedComponent:undefined, selectedCondition:undefined, comparableValue:""};
+  protected override _defaultChoiceFieldConfig:DependentFieldConfig = {option:"", selectedComponent:undefined, selectedCondition:undefined, comparableValue:""};
+  public dependeeField!:QuickEditField;
 
   private constructor(){
     super(ChoiceFieldFormat.DEPENDENT);
@@ -656,12 +674,12 @@ class DependentChoiceField extends ChoiceField{
 
   override prepareSpecificTagAttributes():void{
     this.quickEditTag.setAttribute("data-format", QuickEditFieldFormat.DEPENDENT_FIELD.toString());
-    this.quickEditTag.setAttribute("for", (this._defaultChoiceFieldConfig.dependeeField as QuickEditField).quickEditTag.id);
+    this.quickEditTag.setAttribute("for", (this.dependeeField as QuickEditField).quickEditTag.id);
     super.prepareSpecificTagAttributes()
   }
 
   override validate():boolean{
-    if((this._choiceFieldConfigs as DependentFieldConfig[]).some((choiceFieldConfig:DependentFieldConfig) => !choiceFieldConfig.dependeeField)) {
+    if(!this.dependeeField) {
       alert("Please select dependee field");
       return false;
     }
@@ -1025,12 +1043,13 @@ class PersonalInformationBlockField extends BlockField{
   showPanNumberField:boolean              = false;
   hasSignatureTable:boolean               = false;
   signatureTableElement?:HTMLTableElement;
-  signatureTableHasNameColumn             = false;
-  signatureTableHasAddressColumn          = false;
-  signatureTableHasPhotoColumn            = false;
-  nameColumnNumbar:number                 = 2;
-  addressColumnNumbar:number              = 3;
-  photoColumnNumbar:number                = 4;
+  signatureTableHasNameColumn             = true;
+  signatureTableHasAddressColumn          = true;
+  signatureTableHasPhotoColumn            = true;
+  nameColumnNumber:number                 = 2;
+  addressColumnNumber:number              = 3;
+  photoColumnNumber:number                = 4;
+  blockCaption:string                     = "";
 
   private constructor(){
     super(BlockFieldFormat.PERSONAL_INFORMATION);
@@ -1056,7 +1075,7 @@ class PersonalInformationBlockField extends BlockField{
           if(PersonalInformationComponents.PERSONAL_INFORMATION == prop && true == value){
             target[PersonalInformationComponents.Name]            = true;
             target[PersonalInformationComponents.AGE]             = true;
-            target[PersonalInformationComponents.OCCUPANCY]       = true;
+            target[PersonalInformationComponents.OCCUPATION]       = true;
             target[PersonalInformationComponents.ADDRESS]         = true;
             target[PersonalInformationComponents.MOBILE_NUMBER]   = true;
             target[PersonalInformationComponents.ADHAR_NUMBER]    = true;
@@ -1066,7 +1085,7 @@ class PersonalInformationBlockField extends BlockField{
             target[PersonalInformationComponents.PERSONAL_INFORMATION]   = false;
           }
 
-          if(![PersonalInformationComponents.AGE, PersonalInformationComponents.OCCUPANCY, PersonalInformationComponents.ADDRESS, PersonalInformationComponents.MOBILE_NUMBER, PersonalInformationComponents.ADHAR_NUMBER, PersonalInformationComponents.PAN_NUMBER, PersonalInformationComponents.PASSPORT_PHOTO].some(key=> false == target[key]))
+          if(![PersonalInformationComponents.AGE, PersonalInformationComponents.OCCUPATION, PersonalInformationComponents.ADDRESS, PersonalInformationComponents.MOBILE_NUMBER, PersonalInformationComponents.ADHAR_NUMBER, PersonalInformationComponents.PAN_NUMBER, PersonalInformationComponents.PASSPORT_PHOTO].some(key=> false == target[key]))
             target[PersonalInformationComponents.PERSONAL_INFORMATION]   = true;
 
           return true;
@@ -1078,29 +1097,26 @@ class PersonalInformationBlockField extends BlockField{
   }
 
   override getDependableConditions(selectedComponent?:string):string[]{
-    return [PersonalInformationComponents.PERSONAL_INFORMATION, PersonalInformationComponents.Name].includes(selectedComponent as PersonalInformationComponents) 
-            ? [ComparableConditions.IS] 
-              : ( PersonalInformationComponents.AGE == selectedComponent 
-                  ? Object.values(ComparableConditions).slice(0, 5)
-                    : PersonalInformationComponents.OCCUPANCY == selectedComponent 
-                      ? [ComparableConditions.EQUAL_TO]
-                        : Object.values(Existance)
-                );
+    return PersonalInformationComponents.AGE == selectedComponent 
+            ? Object.values(ComparableConditions).slice(0, 5)
+              : PersonalInformationComponents.OCCUPATION == selectedComponent 
+                ? [ComparableConditions.EQUAL_TO]
+                  : [ComparableConditions.IS];
   }
 
   override getDependableComparableValues(selectedComponent?:string):string[]{
-    return [PersonalInformationComponents.PERSONAL_INFORMATION, PersonalInformationComponents.Name].includes(selectedComponent as PersonalInformationComponents)
+    return PersonalInformationComponents.PERSONAL_INFORMATION == selectedComponent
             ? Object.values(PersonalInformationValues) 
-              : ( PersonalInformationComponents.AGE == selectedComponent 
-                  ? [] 
-                    : PersonalInformationComponents.OCCUPANCY == selectedComponent 
-                      ? []
-                        : Object.values(Existance)
-                );
+              : PersonalInformationComponents.AGE == selectedComponent 
+                ? [] 
+                  : PersonalInformationComponents.OCCUPATION == selectedComponent 
+                    ? Array.from(this.occupationService.fetchOccupationList(), (value:Occupation) => this.languageService.fetchKeyWord(value.keyWordId, this.language) as string)
+                      : Object.values(Existance);
   }
 
   prepareSpecificTagAttributes():void{
     this.quickEditTag.setAttribute("data-format", QuickEditFieldFormat.PERSONAL_INFORMATION_FIELD.toString());
+    this.quickEditTag.setAttribute("data-multiple", this.multiple.toString());
     this.quickEditTag.setAttribute("data-inline", this.inline.toString());
     this.quickEditTag.setAttribute("data-show-mobile-number-field", this.showMobileNumberField.toString());
     this.quickEditTag.setAttribute("data-show-adhar-number-field", this.showAdharNumberField.toString());
@@ -1111,13 +1127,16 @@ class PersonalInformationBlockField extends BlockField{
     this.quickEditTag.setAttribute("data-signature-table-has-photo-column", this.signatureTableHasPhotoColumn.toString());
 
     if(this.signatureTableHasNameColumn)
-      this.quickEditTag.setAttribute("data-name-column-numbar", this.nameColumnNumbar.toString());
+      this.quickEditTag.setAttribute("data-name-column-number", this.nameColumnNumber.toString());
 
     if(this.signatureTableHasAddressColumn)
-      this.quickEditTag.setAttribute("data-address-column-numbar", this.addressColumnNumbar.toString());
+      this.quickEditTag.setAttribute("data-address-column-number", this.addressColumnNumber.toString());
 
     if(this.signatureTableHasPhotoColumn)
-      this.quickEditTag.setAttribute("data-photo-column-numbar", this.photoColumnNumbar.toString());
+      this.quickEditTag.setAttribute("data-photo-column-number", this.photoColumnNumber.toString());
+
+    if(!this.inline)
+      this.quickEditTag.setAttribute("data-block-caption", this.blockCaption);
   }
 
   override markNew(selection:Selection):void{
@@ -1160,7 +1179,8 @@ class PersonalInformationBlockField extends BlockField{
     this.showPanNumberField                           = (personalInformationElementHTML.includes(this.languageService.fetchKeyWord(39, this.language))) ? true : false;
     this.multiple                                     = (personalInformationElementHTML.includes("<ol>")) ? true : false;
     this.inline                                       = ("PERSONAL-INFORMATION-CONTAINER" != personalInformationElement.tagName) ? true : false;
-    this.hasSignatureTable                            = !!document.querySelectorAll("[for='" + personalInformationElement.id + "']").length ? true : false;
+    this.hasSignatureTable                            = document.querySelector("table[for='" + personalInformationElement.id + "']") ? true : false;
+    this.blockCaption                                 = this.inline ? "" : personalInformationElement.lastChild.lastChild.textContent;
   }
 
   override markRepeat(selection:Selection):void{
@@ -1172,12 +1192,12 @@ class PersonalInformationBlockField extends BlockField{
 
     let isInserted = super.insert();
 
-    if(!!personalInformationElementId && !!personalInformationElementId.length) {
-      let NodeList:NodeList = document.querySelectorAll("[for='" + personalInformationElementId + "']");
+    if(!!personalInformationElementId) {
+      let signatureTableElement:HTMLTableElement = document.querySelector("table[for='" + personalInformationElementId + "']") as HTMLTableElement;
 
-      if(!!NodeList.length){
-        let signatureTableElement:HTMLTableElement = NodeList[0] as HTMLTableElement;
+      if(this.hasSignatureTable && !!signatureTableElement){
         signatureTableElement.style.backgroundColor = this._quickEditTagColor;
+        signatureTableElement.setAttribute("for", this.quickEditTag.id);
       }
     }
 
@@ -1188,8 +1208,9 @@ class PersonalInformationBlockField extends BlockField{
 class TableBlockField extends BlockField{
   private static _instance:TableBlockField;
   autoSerializable:boolean    = false;
-  header:boolean              = false;
-  tableHead:string            = "";   
+  hasHeader:boolean           = false;
+  tableHead:string            = "";
+  columns!:number;   
 
   private constructor(){
     super(BlockFieldFormat.PERSONAL_INFORMATION);
@@ -1205,8 +1226,9 @@ class TableBlockField extends BlockField{
   prepareSpecificTagAttributes():void{
     this.quickEditTag.setAttribute("data-format", QuickEditFieldFormat.TABLE_FIELD.toString());
     this.quickEditTag.setAttribute("data-auto-serializable", this.autoSerializable.toString());
-    this.quickEditTag.setAttribute("data-header", this.header.toString());
+    this.quickEditTag.setAttribute("data-has-header", this.hasHeader.toString());
     this.quickEditTag.setAttribute("data-table-head", this.tableHead);
+    this.quickEditTag.setAttribute("data-columns", this.columns.toString());
   }
 
   override markNew(selection:Selection):void{
@@ -1230,8 +1252,9 @@ class TableBlockField extends BlockField{
     super.markNew(selection);
 
     this.autoSerializable = (tableElement.classList?.contains("auto-serialize")) ? true : false;
-    this.header           = ("THEAD" == tableElement.firstChild.tagName) ? true : false;
+    this.hasHeader        = ("THEAD" == tableElement.firstChild.tagName) ? true : false;
     this.tableHead        = ("THEAD" == tableElement.firstChild.tagName) ? tableElement.firstChild.innerHTML.toString() : "";
+    this.columns          = tableElement.firstChild.children.length;
   }
 }
 
@@ -1265,7 +1288,7 @@ class AddressBlockField extends BlockField{
 })
 export class CreateDraftTemplateComponent implements OnInit {
   editorConfig:EditorConfig         = new EditorConfig();
-  latestDraft:HTMLDivElement        = document.createElement("div");
+  private _draft!:Draft;
   widgetColor:ThemePalette          = "primary";
   selectedTabIndex:number           = 0;
 
@@ -1284,10 +1307,11 @@ export class CreateDraftTemplateComponent implements OnInit {
   quickEditFieldFormat              = QuickEditFieldFormat;
   
   constructor(public fontService:FontService, 
-    public languageService:LanguageService) {
-    QuickEditField.setLanguageService(languageService);
+    public languageService:LanguageService,
+    private _occupationService:OccupationService) {
+    QuickEditField.setLanguageService(this.languageService);
     QuickEditField.setLanguage(this.editorConfig.draftLanguage);
-
+    QuickEditField.setOccupationService(this._occupationService);
     this.editorConfig.setTools(ToolGroup.FILE, [FileToolGroup.FIND, FileToolGroup.FIND_AND_REPLACE]);
     this.editorConfig.setTools(ToolGroup.HOME, [HomeToolGroup.UNDO, HomeToolGroup.REDO,  HomeToolGroup.LINE_SPACING, HomeToolGroup.SUPERSCRIPT, HomeToolGroup.SUPERSCRIPT, HomeToolGroup.CHANGE_CASE,
                                                   HomeToolGroup.FORECOLOR, HomeToolGroup.HIGHLIGHT, HomeToolGroup.JUSTIFY, HomeToolGroup.INDENT, HomeToolGroup.OUTDENT,
@@ -1299,29 +1323,34 @@ export class CreateDraftTemplateComponent implements OnInit {
 
   get selectedFont():Font{
     return (Tool.tools[ToolCommand.SET_FONT] as SelectTool).selected
-  } 
+  }
   
-  ngOnInit(): void {}
+  get draft():Draft{
+    return this._draft;
+  }
 
-  updateDraft(draftElement:HTMLDivElement){
-    this.latestDraft  = draftElement;
-    this.fieldPool    = [];
-    for(const key of Object.keys(this.tabData)){
+  set draft(draft:Draft){
+    this._draft     = draft;
+    this.fieldPool  = [];
+
+    for(const key of Object.keys(this.tabData))
       for( const fieldFormat of this.tabData[key as unknown as Tab].getSupportedFieldFormats()) {
         fieldFormat.value.resetMarkedTag();
         fieldFormat.value.resetQuickEditTag();
       }
-    }
-  }
+  }  
+
+  ngOnInit(): void {}
+
 
   markNew():void{
-    if(!this.isSelectionInsideView()) return;
+    if(!this.isSelectionInsideBody()) return;
 
     this.tabData[this.selectedTabIndex as Tab].instance.markNew(window.getSelection() as Selection);
   }
 
   markRepeat():void{
-    if(!this.isSelectionInsideView()) return;
+    if(!this.isSelectionInsideBody()) return;
 
     if(!!this.repeatField)
       this.repeatField.markRepeat(window.getSelection() as Selection);
@@ -1336,13 +1365,17 @@ export class CreateDraftTemplateComponent implements OnInit {
   }
 
   repeat():void{
-    this.repeatField.repeat();
+    this.repeatField.clone().repeat();
   }
 
-  isSelectionInsideView() : boolean{
+  isSelectionInsideBody() : boolean{
     let selectionContainer:any = window.getSelection()!.getRangeAt(0)!.commonAncestorContainer;
 
-    while( !!selectionContainer && ( Node.TEXT_NODE == selectionContainer.nodeType || !selectionContainer.id.includes("view-app-page")) ) {
+    while( !!selectionContainer && ( Node.TEXT_NODE == selectionContainer.nodeType || !selectionContainer.classList.contains("body")) ) {
+      selectionContainer = selectionContainer?.parentElement;
+    }
+
+    while( !!selectionContainer && "APP-VIEW-DRAFT" != selectionContainer.tagName ) {
       selectionContainer = selectionContainer?.parentElement;
     }
 

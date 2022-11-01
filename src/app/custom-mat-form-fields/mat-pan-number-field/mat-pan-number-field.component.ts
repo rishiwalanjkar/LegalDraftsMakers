@@ -12,6 +12,10 @@ export class MatPanNumberField{
   middleInput:MatDividedInputConstituent  = new MatDividedInputConstituent("", 45, InputType.NUMBER, 0, 9999, 4);
   lastInput:MatDividedInputConstituent    = new MatDividedInputConstituent("", 47, InputType.CAPITAL_ALPHABATE, 1, 1, 1);
   panNumberInput:MatDividedInput          = new MatDividedInput([this.firstInput, this.middleInput, this.lastInput], "");
+  
+  get value():string{
+    return !!this.panNumberInput.toString() ? this.panNumberInput.toString() : "";
+  }
 
   setLabel(label:string):void{
     this._label = label;
@@ -25,8 +29,8 @@ export class MatPanNumberField{
     return this.panNumberInput.isEmpty();
   }
 
-  get errorState():boolean{
-    return this.panNumberInput.errorState;
+  hasPlaceholder():boolean{
+    return this.panNumberInput.hasPlaceholder();
   }
 }
 
@@ -82,7 +86,7 @@ export class MatPanNumberFieldComponent implements MatFormFieldControl<MatPanNum
   }
 
   get shouldLabelFloat():boolean{
-    return this.focused || !this.empty;
+    return this.focused || !this.empty || this.value.hasPlaceholder();
   }
 
   @Input()
@@ -107,7 +111,7 @@ export class MatPanNumberFieldComponent implements MatFormFieldControl<MatPanNum
   }
 
   get errorState():boolean{
-    return this.touched && this.value.errorState;
+    return this.touched && this.parts.controls['panNumber'].invalid;
   }
 
   setDescribedByIds(ids: string[]): void {

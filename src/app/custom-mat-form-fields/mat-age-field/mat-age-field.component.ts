@@ -2,15 +2,17 @@ import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Component, ElementRef, HostBinding, HostListener, Input, OnInit, Optional, Self } from '@angular/core';
 import { ControlValueAccessor, FormBuilder, FormControl, FormGroup, NgControl, Validators } from '@angular/forms';
 import { MatFormFieldControl } from '@angular/material/form-field';
+import * as moment from 'moment';
+import { Moment } from 'moment';
 import { Subject } from 'rxjs';
 
 export class MatAgeField{
   private _label!:string;
-  private _birthDate!:Date;
+  private _birthDate!:Moment;
   private _age:string       = "";
   
-  set birthDate(date:string|Date){
-    this._birthDate = ( date instanceof Date )? date : new Date(parseInt(date.substring(6)), parseInt(date.substring(3, 4)), parseInt(date.substring(0, 1)));
+  set birthDate(date:string|Moment){
+    this._birthDate = ( "string" == typeof date )? moment(date): date;
   }
 
   set age(age:string){
@@ -19,17 +21,14 @@ export class MatAgeField{
 
   get age():string{
     if(!this._birthDate) return !this._age.length ? "" : this._age;
-    
-    let today:Date              = new Date(),
-        age:number              = today.getFullYear() - this._birthDate.getFullYear(),
-        monthDifference:number  = today.getMonth() - this._birthDate.getMonth();
 
-    if(monthDifference < 0 || (0 == monthDifference && today.getDate() < this._birthDate.getDate()))
-      age--;
-
-    this._age = age.toString();
+    this._age = moment().diff(this._birthDate, 'years', false).toString();
 
     return this._age;
+  }
+    
+  get value():string{
+    return this.age;
   }
 
   setLabel(label:string):void{
@@ -54,8 +53,8 @@ export class MatAgeField{
 })
 export class MatAgeFieldComponent implements MatFormFieldControl<MatAgeField>, ControlValueAccessor, OnInit {
   static instanceCounter:number     = 0;
-  private _value!: MatAgeField;
-  stateChanges              = new Subject<void>();
+  private _value: MatAgeField       = new MatAgeField();
+  stateChanges                      = new Subject<void>();
   @HostBinding() id: string         = `custom-mat-age-field-${MatAgeFieldComponent.instanceCounter++}`;
   placeholder: string               = "Select Birth Date";
   private _focused: boolean         = false;
@@ -125,7 +124,9 @@ export class MatAgeFieldComponent implements MatFormFieldControl<MatAgeField>, C
   }
 
   get errorState():boolean{
-    return this.touched && this.parts.invalid;
+    this.ngControl.control!.setErrors(this.parts.controls['age'].errors);
+
+    return this.touched && this.parts.controls['age'].invalid;
   }
 
   writeValue(newValue: MatAgeField): void {
@@ -156,9 +157,10 @@ export class MatAgeFieldComponent implements MatFormFieldControl<MatAgeField>, C
     age.valueChanges.subscribe(( newAge:string ) => {
       this._value.age = newAge;
       this.onChange(this._value);
+      this.ngControl.control!.setErrors(age.errors);
     });
 
-    birthDate.valueChanges.subscribe(( newDate:string ) => {
+    birthDate.valueChanges.subscribe(( newDate:Moment ) => {
       this._value.birthDate = newDate;
       age.setValue(this._value.age);
       this.onChange(this._value);

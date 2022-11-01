@@ -1,6 +1,7 @@
 import { Component, ElementRef, HostBinding, HostListener, Input, OnDestroy, Optional, Self } from '@angular/core';
 import { ControlValueAccessor, NgControl } from '@angular/forms';
 import { MatFormFieldControl } from '@angular/material/form-field';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { FontService } from 'src/app/font/font.service';
 import { EditorService } from '../../editor.service';

@@ -11,6 +11,12 @@ export class MatOccupationField{
   private _language!:Language;
   private _languageService!:LanguageService;
   selectedOccupation!:Occupation;
+     
+  get value():string{
+    return (!this._languageService || "undefined" == typeof this._language || !this.selectedOccupation)
+            ? ""
+              : this._languageService.fetchKeyWord(this.selectedOccupation.keyWordId, this._language);
+  }
 
   setLanguage(language:Language) {
     this._language = language;
