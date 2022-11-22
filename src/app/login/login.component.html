@@ -1,0 +1,26 @@
+<mat-card class="mat-elevation-z12">
+    <mat-card-content>
+        <div class="grid c-1 rg-2">
+            <mat-form-field appearance="fill">
+                <mat-label>Username</mat-label>
+                <input matInput [required]="true"/>
+            </mat-form-field>
+            <mat-form-field appearance="fill">
+                <mat-label>Password</mat-label>
+                <input matInput [required]="true"/>
+            </mat-form-field>
+        </div>
+    </mat-card-content>
+    <mat-card-actions>
+        <div class="grid c-1 h-ac">
+            <button mat-flat-button color="primary" routerLink="/dashboard">Log in</button>
+        </div>
+    </mat-card-actions>
+    <mat-divider inset></mat-divider>
+    <mat-card-actions>
+        <div class="grid c-2 g-2 h-as">
+            <a mat-button color="accent" routerLink="">Forgot Password ?</a>
+            <a mat-button color="warn" routerLink="/registration">New User Registration</a>
+        </div>
+    </mat-card-actions>
+</mat-card>

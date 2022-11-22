@@ -1,0 +1,36 @@
+<mat-card class="mat-elevation-z12">
+    <mat-card-actions>
+        <div class="grid c-1 h-al">
+            <a mat-icon-button color="warn" routerLink="/login"><mat-icon>arrow_back_ios</mat-icon></a>
+        </div>
+    </mat-card-actions>
+    <mat-card-content>
+        <fieldset class="grid c-3 cg-1 h-al">
+            <legend [ngClass]="opaque">Select languages that you know</legend>
+            <mat-checkbox *ngFor="let language of languages;" [(ngModel)]="$any(selectedLanguages)[language]" [disabled]="isEnglishLanguage(language)" color="primary">{{language}}</mat-checkbox>
+        </fieldset>
+        <br>
+        <div class="grid c-1 rg-4">
+            <ng-container *ngFor="let language of languages;">
+                <app-personal-info-block
+                    class="registration-details"
+                    [opaque]="opaque"
+                    *ngIf="$any(selectedLanguages)[language]"
+                    appearance="fill" 
+                    label="{{languageService.fetchKeyWord(88, language)}} ( {{language}} )"
+                    [language]="language"
+                    [showInlineField]="false"
+                    [showFatherOrHusbandNameField]="true"
+                    [showMobileNumberField]="true"
+                    [required]="true"
+                ></app-personal-info-block>
+            </ng-container>
+        </div>
+    </mat-card-content>
+    <mat-divider inset></mat-divider>
+    <mat-card-actions>
+        <div class="grid c-1 h-ac">
+            <button mat-flat-button color="primary" routerLink="/login">Register</button>
+        </div>
+    </mat-card-actions>
+</mat-card>

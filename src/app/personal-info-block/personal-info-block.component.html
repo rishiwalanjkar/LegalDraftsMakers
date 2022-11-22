@@ -1,7 +1,7 @@
 <fieldset class="grid cg-2 rg-1" [ngClass]="inline ? 'c-3' : 'c-2'" [formGroup]="form">
-    <legend>{{label}}</legend>
+    <legend [ngClass]="opaque">{{label}}</legend>
 
-    <mat-checkbox [ngClass]="inline ? 'cs-3' : 'cs-2'" color="primary" formControlName="isInline">{{languageService.fetchKeyWord(36, language)}}</mat-checkbox>
+    <mat-checkbox *ngIf="showInlineField" [ngClass]="inline ? 'cs-3' : 'cs-2'" color="primary" formControlName="isInline">{{languageService.fetchKeyWord(36, language)}}</mat-checkbox>
     
     <mat-form-field class="cs-2" [appearance]="appearance">
         <mat-label>{{languageService.fetchKeyWord(23, language)}}</mat-label>

@@ -10,19 +10,33 @@ import { ReadyDraftComponent } from './ready-draft/ready-draft.component';
 import { UploadFontsComponent } from './upload-fonts/upload-fonts.component';
 import { ViewCustomersComponent } from './view-customers/view-customers.component';
 import { ViewIncomeComponent } from './view-income/view-income.component';
+import { LoginComponent } from './login/login.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { AuthenticatorGuard } from './login/authenticator.guard';
+import { RegistrationComponent } from './registration/registration.component';
 
 const routes: Routes = [
-  {path:'blank-draft', component:BlankDraftComponent},
-  {path:'ready-draft', component:ReadyDraftComponent},
-  {path:'log-income', component:LogIncomeComponent},
-  {path:'view-income', component:ViewIncomeComponent},
-  {path:'create-customer-profile', component:CreateCustomerProfileComponent},
-  {path:'view-customers', component:ViewCustomersComponent},
-  {path:'extract-email-documents', component:ExtractEmailDocumentsComponent},
-  {path:'extract-whatsapp-documents', component:ExtractWhatsappDocumentsComponent},
-  {path:'upload-fonts', component:UploadFontsComponent},
-  {path:'create-draft-template', component:CreateDraftTemplateComponent},
-  {path:'**', component:BlankDraftComponent}
+  {
+    path:'dashboard', 
+    component:DashboardComponent,
+    canActivate:[AuthenticatorGuard],
+    children:[
+      {path:'blank-draft', component:BlankDraftComponent},
+      {path:'ready-draft', component:ReadyDraftComponent},
+      {path:'log-income', component:LogIncomeComponent},
+      {path:'view-income', component:ViewIncomeComponent},
+      {path:'create-customer-profile', component:CreateCustomerProfileComponent},
+      {path:'view-customers', component:ViewCustomersComponent},
+      {path:'extract-email-documents', component:ExtractEmailDocumentsComponent},
+      {path:'extract-whatsapp-documents', component:ExtractWhatsappDocumentsComponent},
+      {path:'upload-fonts', component:UploadFontsComponent},
+      {path:'create-draft-template', component:CreateDraftTemplateComponent},
+      {path:'**', component:BlankDraftComponent}
+    ]
+  },
+  {path:'login', component:LoginComponent},
+  {path:'registration', component:RegistrationComponent},
+  {path:'**', component:LoginComponent}
 ];
 
 @NgModule({

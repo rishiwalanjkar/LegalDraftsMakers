@@ -4,6 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatFormFieldAppearance } from '@angular/material/form-field';
 import { Font } from 'src/app/font/font.service';
 import { Language, LanguageService } from 'src/app/language/language.service';
+import { Opaque } from '../app.component';
 import { PersonalInformationComponents } from '../create-draft-template/create-draft-template.component';
 import { MatAddressField } from '../custom-mat-form-fields/mat-address-field/mat-address-field.component';
 import { MatAdharNumberField } from '../custom-mat-form-fields/mat-adhar-number-field/mat-adhar-number-field.component';
@@ -47,11 +48,13 @@ export class PersonalInfoBlockComponent implements OnInit {
   private _inline:boolean                                   = false;
   
   currentAddressLabel!:string;
+  @Input() opaque!:Opaque;
   @Input() appearance:MatFormFieldAppearance                = "standard";
   @Input() language!:Language;
   @Input() font!:Font;
   @Input() label!:string;
   @Input() disabled:boolean                                 = false;
+  @Input() showInlineField:boolean                          = true;
   @Input() showFatherOrHusbandNameField:boolean             = false;
   @Input() showMobileNumberField:boolean                    = false;
   @Input() showAdharNumberField:boolean                     = false;

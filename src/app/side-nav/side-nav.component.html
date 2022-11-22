@@ -10,11 +10,11 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 
-                <a mat-list-item routerLink="{{subMenu.url}}" routerLinkActive="active" *ngFor="let subMenu of menu.subMenu;" (click)="isHandset && drawer.toggle()">{{subMenu.name}}</a>
+                <a mat-list-item routerLink="/dashboard/{{subMenu.url}}" routerLinkActive="active" *ngFor="let subMenu of menu.subMenu;" (click)="isHandset && drawer.toggle()">{{subMenu.name}}</a>
             </mat-expansion-panel>
             
             <ng-template #standAloneMenu>
-                <a mat-list-item routerLink="{{menu.url}}" routerLinkActive="active" class="stand-alone-menu">{{menu.name}}</a>
+                <a mat-list-item routerLink="/dashboard/{{menu.url}}" routerLinkActive="active" class="stand-alone-menu">{{menu.name}}</a>
             </ng-template>            
         </ng-template>
     </mat-accordion>

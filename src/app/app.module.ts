@@ -29,6 +29,8 @@ import { CreateDraftTemplateComponent } from './create-draft-template/create-dra
 import { EditorModule } from './editor/editor.module';
 import { SharedModule } from './shared/shared.module';
 import { ViewDraftComponent } from './draft/view-draft/view-draft.component';
+import { LoginComponent } from './login/login.component';
+import { RegistrationComponent } from './registration/registration.component';
 
 @NgModule({
   declarations: [
@@ -46,6 +48,8 @@ import { ViewDraftComponent } from './draft/view-draft/view-draft.component';
     UploadFontsComponent,
     CreateDraftTemplateComponent,
     ViewDraftComponent,
+    LoginComponent,
+    RegistrationComponent,
   ],
   imports: [
     BrowserModule,

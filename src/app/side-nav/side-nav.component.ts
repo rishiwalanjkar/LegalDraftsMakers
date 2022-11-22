@@ -18,15 +18,15 @@ export class SideNavComponent implements OnInit {
   menus:Menu[] = [
       {
           name:'Create Draft',
-          subMenu : [{ name : 'Blank Draft', url:'/blank-draft'}, { name : 'Ready Draft', url:'/ready-draft' }]
+          subMenu : [{ name : 'Blank Draft', url:'blank-draft'}, { name : 'Ready Draft', url:'ready-draft' }]
       },
       {
           name:'Maintain & View Statistics',
-          subMenu : [{ name : 'Log Income', url:'/log-income'}, { name : 'View Income', url:'/view-income' }, { name : 'Create Customer Profile', url:'/create-customer-profile' }, { name : 'View Customers', url:'/view-customers' }]
+          subMenu : [{ name : 'Log Income', url:'log-income'}, { name : 'View Income', url:'view-income' }, { name : 'Create Customer Profile', url:'create-customer-profile' }, { name : 'View Customers', url:'/view-customers' }]
       },
       {
           name:'Extract Documents',
-          subMenu : [{ name : 'Email', url:'/extract-email-documents'}, { name : 'Whatsapp', url:'/extract-whatsapp-documents' }]
+          subMenu : [{ name : 'Email', url:'extract-email-documents'}, { name : 'Whatsapp', url:'extract-whatsapp-documents' }]
       },
       {
           name:'External Links',
@@ -34,7 +34,7 @@ export class SideNavComponent implements OnInit {
       },
       {
           name:'Settings',
-          subMenu : [{ name : 'Upload Fonts', url:'/upload-fonts'}, { name : 'Create Draft Template', url:'/create-draft-template' }]
+          subMenu : [{ name : 'Upload Fonts', url:'upload-fonts'}, { name : 'Create Draft Template', url:'create-draft-template' }]
       }
   ];
 

@@ -109,6 +109,7 @@ export class LanguageService {
                             85 : "October",
                             86 : "November",
                             87 : "December",
+                            88 : "Personal Information",
                           },
       [Language.MARATHI] : {1 :"नोकरी",
                             2 : "शेती",
@@ -197,6 +198,7 @@ export class LanguageService {
                             85 : "ऑक्टोबर",
                             86 : "नोव्हेंबर",
                             87 : "डिसेंबर",
+                            88 : "व्यक्तिगत माहिती",
                           },
       [Language.HINDI]    : {1 :"नोकरी",
                               2 : "शेती",
@@ -285,6 +287,7 @@ export class LanguageService {
                               85 : "अक्टूबर",
                               86 : "नवंबर",
                               87 : "दिसंबर",
+                              88 : "व्यक्तिगत जानकारी",
                             }
     }
 
